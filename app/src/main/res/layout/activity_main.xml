@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-
+    android:backgroundTint="@color/black"
     android:background="@color/black"
     >
     <LinearLayout
@@ -38,7 +38,9 @@
             android:text="Browse"
             android:textSize="20dp"
             android:drawableLeft="@drawable/browsebutton"
-            android:layout_marginRight="10dp"></Button>
+            android:layout_marginRight="10dp"
+            android:backgroundTint="#00B0FF"
+            ></Button>
     <Button
 
         android:layout_width="180dp"
@@ -49,7 +51,9 @@
         android:onClick="NextPage"
         android:textSize="20dp"
         android:text="Hide Path"
-        android:drawableLeft="@drawable/pathbutton"></Button>
+        android:drawableLeft="@drawable/pathbutton"
+        android:backgroundTint="#00B0FF"
+        ></Button>
 </LinearLayout>
 
 
@@ -127,6 +131,7 @@
             android:layout_height="wrap_content"
             android:text="Play"
             android:textSize="16dp"
+            android:backgroundTint="#00B0FF"
             android:drawableLeft="@drawable/playbutton"
             android:layout_marginRight="8dp"></Button>
 
