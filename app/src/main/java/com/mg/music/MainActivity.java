@@ -2,12 +2,16 @@ package com.mg.music;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
@@ -22,6 +26,8 @@ import android.content.Intent;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.File;
@@ -40,6 +46,13 @@ public static final int REQUEST_CODE_PICKER_FILE=1;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+//            NotificationChannel channel=new NotificationChannel("music_channel","Music Channel", NotificationManager.IMPORTANCE_LOW);
+//            NotificationManager notificationManager=getSystemService(NotificationManager.class);
+//            notificationManager.createNotificationChannel(channel);
+//        }
+
 
         itiming=findViewById(R.id.itiming);
         ftiming=findViewById(R.id.ftiming);
@@ -187,6 +200,8 @@ public static final int REQUEST_CODE_PICKER_FILE=1;
 
       }
   }
+
+
     public void openFilePicker() {
         Intent intent=new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
@@ -246,6 +261,12 @@ public static final int REQUEST_CODE_PICKER_FILE=1;
             mediaPlayer.reset();
         }
         try{
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    mediaPlayer.start();
+                }
+            });
             mediaPlayer.setDataSource(filePath);
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mediaPlayer.prepare();
