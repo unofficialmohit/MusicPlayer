@@ -37,14 +37,12 @@ public class MainActivity extends AppCompatActivity {
 public MediaPlayer mediaPlayer;
 public TextView nowPlayingText;
 public EditText songSelection;
-public Button playButton,pauseButton,browseButton,showUrl;
 public ImageView imgView;
 public SeekBar seekbar;
 public TextView itiming,ftiming;
 Drawable drawplaybutton,drawpausebutton;
-public ImageButton imageButton;
+public ImageButton imageButton,pauseButton,nextButton,prevButton;
 String path="";
-public static final int REQUEST_CODE_PICKER_FILE=1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,11 +63,30 @@ public static final int REQUEST_CODE_PICKER_FILE=1;
         path = getIntent().getStringExtra("path");
         itiming = findViewById(R.id.itiming);
         ftiming = findViewById(R.id.ftiming);
+
+
         imgView = findViewById(R.id.art);
         imgView.setBackgroundResource(R.drawable.playing);
 
+
         nowPlayingText = findViewById(R.id.nowPlayingText);
         nowPlayingText.setSelected(true);
+
+        prevButton=findViewById(R.id.prevButton);
+        prevButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+        nextButton=findViewById(R.id.nextButton);
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
 //        playButton=findViewById(R.id.playButton);
 //        playButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -90,14 +107,11 @@ public static final int REQUEST_CODE_PICKER_FILE=1;
                 if (mediaPlayer != null) {
                     if (mediaPlayer.isPlaying()) {
                         mediaPlayer.pause();
-                        pauseButton.setCompoundDrawablesWithIntrinsicBounds(drawplaybutton, null, null, null);
-                        pauseButton.setText("Play");
+                        pauseButton.setBackgroundResource(R.drawable.playbutton);
                     } else {
                         mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
                         mediaPlayer.start();
-                        pauseButton.setText("Pause");
-
-                        pauseButton.setCompoundDrawablesWithIntrinsicBounds(drawpausebutton, null, null, null);
+                        pauseButton.setBackgroundResource(R.drawable.pausebutton);
 
                     }
                 } else {
@@ -142,7 +156,7 @@ public static final int REQUEST_CODE_PICKER_FILE=1;
             MyApplication myapp=(MyApplication)getApplication();
             mediaPlayer=myapp.getMediaPlayer();
             if(path!=null)
-            playAudio(path);
+            { playAudio(path);}
             MediaMetadataRetriever retriever = new MediaMetadataRetriever();
             retriever.setDataSource(path);
             byte[] albumArt = retriever.getEmbeddedPicture();

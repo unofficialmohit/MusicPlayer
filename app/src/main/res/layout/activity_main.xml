@@ -88,16 +88,24 @@
 
         >
 
-
-        <Button
+        <ImageButton
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:background="@drawable/prevbutton"
+            android:id="@+id/prevButton" />
+        <ImageButton
             android:id="@+id/playpauseButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Pause"
-            android:textSize="16dp"
-            android:backgroundTint="#00B0FF"
-            android:drawableLeft="@drawable/pausebutton"
-            android:layout_marginRight="8dp"></Button>
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:backgroundTint="#FFFFFF"
+            android:background="@drawable/pausebutton"
+            android:layout_marginRight="15dp"
+            android:layout_marginLeft="15dp"></ImageButton>
+        <ImageButton
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:background="@drawable/nextbutton"
+            android:id="@+id/nextButton"/>
 
 
     </LinearLayout>
