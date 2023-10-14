@@ -13,11 +13,15 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,7 +29,7 @@ import java.util.List;
 
 public class MusicList extends AppCompatActivity {
 
-    public List<AudioFile> audioFiles=new ArrayList<>();
+    public ArrayList<AudioFile> audioFiles=new ArrayList<>();
     public AudioAdapter audioAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,10 +44,11 @@ public class MusicList extends AppCompatActivity {
         audioAdapter.setOnItemClickListener(new AudioAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                AudioFile clickedAudio= audioFiles.get(position);
+//                AudioFile clickedAudio= audioFiles.get(position);
 //                Toast.makeText(MusicList.this, clickedAudio.getFilePath(), Toast.LENGTH_SHORT).show();
                 Intent intent=new Intent(MusicList.this,MainActivity.class);
-                intent.putExtra("path",clickedAudio.getFilePath());
+                intent.putExtra("path",Integer.toString(position));
+
                 startActivity(intent);
             }
         });

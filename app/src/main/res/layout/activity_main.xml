@@ -14,6 +14,8 @@
         android:id="@+id/cross"
         android:orientation="horizontal"
         android:gravity="center"
+        android:layout_below="@+id/l4"
+        android:layout_marginTop="70dp"
         >
         <ImageButton
             android:layout_width="50dp"
@@ -29,8 +31,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/img"
         android:gravity="center"
-        android:layout_below="@id/cross"
-        android:layout_marginTop="40dp">
+        android:layout_marginTop="70dp">
         <ImageView
             android:layout_width="300dp"
             android:layout_height="300dp"
@@ -87,7 +88,13 @@
 
 
         >
-
+<ImageButton
+    android:layout_width="30dp"
+    android:layout_height="30dp"
+    android:id="@+id/repeatButton"
+    android:background="@drawable/repeatall"
+    android:layout_marginRight="30dp"
+    />
         <ImageButton
             android:layout_width="60dp"
             android:layout_height="60dp"
@@ -106,8 +113,14 @@
             android:layout_height="60dp"
             android:background="@drawable/nextbutton"
             android:id="@+id/nextButton"/>
+        <ImageButton
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/shuffleoff"
+            android:layout_marginLeft="30dp"
+            android:id="@+id/shuffleButton"
 
-
+            />
     </LinearLayout>
 
     <LinearLayout
