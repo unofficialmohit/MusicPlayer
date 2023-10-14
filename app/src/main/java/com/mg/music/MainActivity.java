@@ -18,6 +18,7 @@ import android.text.Editable;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -41,29 +42,33 @@ public ImageView imgView;
 public SeekBar seekbar;
 public TextView itiming,ftiming;
 Drawable drawplaybutton,drawpausebutton;
+public ImageButton imageButton;
+String path="";
 public static final int REQUEST_CODE_PICKER_FILE=1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+            imageButton=findViewById(R.id.crossed);
+            imageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onBackPressed();
+                }
+            });
 //        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
 //            NotificationChannel channel=new NotificationChannel("music_channel","Music Channel", NotificationManager.IMPORTANCE_LOW);
 //            NotificationManager notificationManager=getSystemService(NotificationManager.class);
 //            notificationManager.createNotificationChannel(channel);
 //        }
 
-
-        itiming=findViewById(R.id.itiming);
-        ftiming=findViewById(R.id.ftiming);
-
-        showUrl=findViewById(R.id.url);
+        path = getIntent().getStringExtra("path");
+        itiming = findViewById(R.id.itiming);
+        ftiming = findViewById(R.id.ftiming);
         imgView = findViewById(R.id.art);
         imgView.setBackgroundResource(R.drawable.playing);
 
-        songSelection=findViewById(R.id.songSelect);
-
-        nowPlayingText=findViewById(R.id.nowPlayingText);
+        nowPlayingText = findViewById(R.id.nowPlayingText);
         nowPlayingText.setSelected(true);
 //        playButton=findViewById(R.id.playButton);
 //        playButton.setOnClickListener(new View.OnClickListener() {
@@ -75,32 +80,27 @@ public static final int REQUEST_CODE_PICKER_FILE=1;
 //
 //            }
 //        });
-        drawpausebutton= ContextCompat.getDrawable(this,R.drawable.pausebutton);
-        drawplaybutton= ContextCompat.getDrawable(this,R.drawable.playbutton);
+        drawpausebutton = ContextCompat.getDrawable(this, R.drawable.pausebutton);
+        drawplaybutton = ContextCompat.getDrawable(this, R.drawable.playbutton);
 
-        pauseButton=findViewById(R.id.playpauseButton);
+        pauseButton = findViewById(R.id.playpauseButton);
         pauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mediaPlayer!=null){
-                if(mediaPlayer.isPlaying())
-                {
-                    mediaPlayer.pause();
-                    pauseButton.setCompoundDrawablesWithIntrinsicBounds(drawplaybutton, null, null, null);
-                    pauseButton.setText("Play");
-                }
-                else
-                {
-                    mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
-                    mediaPlayer.start();
-                    pauseButton.setText("Pause");
+                if (mediaPlayer != null) {
+                    if (mediaPlayer.isPlaying()) {
+                        mediaPlayer.pause();
+                        pauseButton.setCompoundDrawablesWithIntrinsicBounds(drawplaybutton, null, null, null);
+                        pauseButton.setText("Play");
+                    } else {
+                        mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
+                        mediaPlayer.start();
+                        pauseButton.setText("Pause");
 
-                    pauseButton.setCompoundDrawablesWithIntrinsicBounds(drawpausebutton, null, null, null);
+                        pauseButton.setCompoundDrawablesWithIntrinsicBounds(drawpausebutton, null, null, null);
 
-                }
-                }
-                else
-                {
+                    }
+                } else {
                     Toast.makeText(MainActivity.this, "Nothing to Play", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -118,20 +118,12 @@ public static final int REQUEST_CODE_PICKER_FILE=1;
 //                }
 //            }
 //        });
-        browseButton=findViewById(R.id.browseButton);
-        browseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-        openFilePicker();
-            }
-        });
 
-        seekbar=findViewById(R.id.seek);
+        seekbar = findViewById(R.id.seek);
         seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                if(b && mediaPlayer!=null)
-                {
+                if (b && mediaPlayer != null) {
                     mediaPlayer.seekTo(i);
                 }
             }
@@ -146,7 +138,27 @@ public static final int REQUEST_CODE_PICKER_FILE=1;
 
             }
         });
+        try {
+            MyApplication myapp=(MyApplication)getApplication();
+            mediaPlayer=myapp.getMediaPlayer();
+            if(path!=null)
+            playAudio(path);
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(path);
+            byte[] albumArt = retriever.getEmbeddedPicture();
+            if (albumArt != null) {
+                Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
+                imgView.setImageBitmap(albumArtBitmap);
+            } else {
+                imgView.setImageResource(R.drawable.playing);
+            }
+            retriever.release();
 
+        }
+        catch (Exception ae)
+        {
+            Toast.makeText(this, ae.toString(), Toast.LENGTH_SHORT).show();
+        }
     }
     public void UpdateSeek()
     {
@@ -159,7 +171,7 @@ public static final int REQUEST_CODE_PICKER_FILE=1;
         itiming.setText(milliSecondsToTimer(currentPosition));
         if(totalDuration==currentPosition)
         {
-            playAudio( songSelection.getText());
+            playAudio( songSelection.getText().toString());
         }
         Handler handler=new Handler();
         handler.postDelayed(new Runnable() {
@@ -186,80 +198,18 @@ public static final int REQUEST_CODE_PICKER_FILE=1;
         }
         return timerString;
     }
-  public void NextPage(View view)
-  {
-//      Toast.makeText(this, "WORKING ON IT PLOX WAIT :-/", Toast.LENGTH_SHORT).show();
-      if(songSelection.getVisibility()==View.INVISIBLE)
-      {
-          songSelection.setVisibility(View.VISIBLE);
-          showUrl.setText("Hide Path");
-      }else
-      {
-          songSelection.setVisibility(View.INVISIBLE);
-          showUrl.setText("Show Path");
-
-      }
-  }
-
-
-    public void openFilePicker() {
-        Intent intent=new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("*/*");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(Intent.createChooser(intent,"Select a File"),REQUEST_CODE_PICKER_FILE);
-    }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        try {
-            if (requestCode == REQUEST_CODE_PICKER_FILE && resultCode == RESULT_OK && data != null) {
-                Uri selectedFileUri = data.getData();
-                String filePath = selectedFileUri.getPath();
-                filePath = filePath.substring(filePath.indexOf("/document/primary:") + "/document/primary:".length());
-                filePath = "/storage/emulated/0/" + filePath;
-                songSelection.setText(filePath);
-                playAudio( songSelection.getText());
-
-                pauseButton.setText("Pause");
-
-                pauseButton.setCompoundDrawablesWithIntrinsicBounds(drawpausebutton, null, null, null);
-                seekbar.setVisibility(View.VISIBLE);
-                songSelection.setVisibility(View.INVISIBLE);
-                showUrl.setText("Show Path");
-
-                MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-                retriever.setDataSource(filePath);
-                byte[] albumArt = retriever.getEmbeddedPicture();
-                if (albumArt != null) {
-                    Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
-                    imgView.setImageBitmap(albumArtBitmap);
-                } else {
-                    imgView.setImageResource(R.drawable.playing);
-                }
-                retriever.release();
-            }
-        }
-        catch(Exception ae)
-        {
-            Toast.makeText(this, ae.toString(), Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    public void playAudio(Editable edittext) {
+    public void playAudio(String edittext) {
 
         String filePath=edittext.toString();
         if (filePath == null || !new File(filePath).exists()) {
             Toast.makeText(this, "Invalid file path", Toast.LENGTH_SHORT).show();
             return;
         }
-        if(mediaPlayer==null)
-        {
-            mediaPlayer=new MediaPlayer();
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
         }
-        else
-        {
-            mediaPlayer.reset();
-        }
+        mediaPlayer.reset();
+
         try{
             mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
@@ -272,7 +222,7 @@ public static final int REQUEST_CODE_PICKER_FILE=1;
             mediaPlayer.prepare();
             mediaPlayer.start();
             filePath = filePath.substring(filePath.lastIndexOf("/")+1);
-            nowPlayingText.setText("Playing : "+ filePath);
+            nowPlayingText.setText(filePath);
             ftiming.setText(milliSecondsToTimer(mediaPlayer.getDuration()));
             UpdateSeek();
 
@@ -284,14 +234,15 @@ public static final int REQUEST_CODE_PICKER_FILE=1;
             String a= String.valueOf(ae);
            Toast.makeText(this, a, Toast.LENGTH_SHORT).show();
         }
+
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if(mediaPlayer!=null)
-        {
-            mediaPlayer.release();
-        }
-    }
+//    @Override
+//    protected void onDestroy() {
+//       super.onDestroy();
+//        if(mediaPlayer!=null)
+//        {
+//            mediaPlayer.release();
+//        }
+//    }
 }

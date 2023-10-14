@@ -11,61 +11,25 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:id="@+id/l1"
-        android:paddingTop="20dp"
+        android:id="@+id/cross"
+        android:orientation="horizontal"
         android:gravity="center"
         >
-
-        <EditText
-            android:id="@+id/songSelect"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="25dp"
-            android:hint="Choose a Song"
-            android:gravity="center"
-            android:scrollHorizontally="true"
-            android:singleLine="true"
-            android:layout_marginBottom="20dp"></EditText>
-<LinearLayout
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal">
-        <Button
-            android:id="@+id/browseButton"
-            android:layout_width="180dp"
-            android:layout_height="wrap_content"
-            android:text="Browse"
-            android:textSize="20dp"
-            android:drawableLeft="@drawable/browsebutton"
-            android:layout_marginRight="10dp"
-            android:backgroundTint="#00B0FF"
-            ></Button>
-    <Button
-
-        android:layout_width="180dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:id="@+id/url"
-        android:onClick="NextPage"
-        android:textSize="20dp"
-        android:text="Hide Path"
-        android:drawableLeft="@drawable/pathbutton"
-        android:backgroundTint="#00B0FF"
-        ></Button>
-</LinearLayout>
-
-
-
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/crossbutton"
+            android:layout_margin="10dp"
+            android:id="@+id/crossed"
+            />
 
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/l1"
         android:id="@+id/img"
         android:gravity="center"
+        android:layout_below="@id/cross"
         android:layout_marginTop="40dp">
         <ImageView
             android:layout_width="300dp"
@@ -81,7 +45,7 @@
     <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_below="@+id/img"
+    android:layout_below="@+id/l2"
     android:id="@+id/seeking"
     android:padding="10dp"
     android:orientation="vertical"
@@ -129,10 +93,10 @@
             android:id="@+id/playpauseButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Play"
+            android:text="Pause"
             android:textSize="16dp"
             android:backgroundTint="#00B0FF"
-            android:drawableLeft="@drawable/playbutton"
+            android:drawableLeft="@drawable/pausebutton"
             android:layout_marginRight="8dp"></Button>
 
 
@@ -142,13 +106,13 @@
         android:id="@+id/l2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/l4"
+        android:layout_below="@id/img"
         android:layout_centerInParent="true"
+        android:layout_marginTop="30dp"
         android:layout_marginBottom="20dp"
         android:gravity="center"
-        android:paddingBottom="30dp"
         android:paddingTop="30dp"
-        android:layout_marginTop="30dp">
+        android:paddingBottom="30dp">
 
         <TextView
             android:id="@+id/nowPlayingText"
