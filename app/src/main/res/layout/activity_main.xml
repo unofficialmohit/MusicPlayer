@@ -65,6 +65,7 @@
             android:layout_height="wrap_content"
             android:text="00:00"
             android:id="@+id/itiming"
+            android:textColor="#F8E2E2"
 
             />
         <TextView
@@ -73,6 +74,7 @@
             android:text="00:00"
             android:textAlignment="textEnd"
             android:id="@+id/ftiming"
+            android:textColor="#F8E2E2"
 
             />
     </LinearLayout>
@@ -146,6 +148,7 @@
             android:scrollHorizontally="true"
             android:singleLine="true"
             android:text="Nothing to Play"
+            android:textColor="#F8E2E2"
             android:textSize="25dp"></TextView>
 
     </LinearLayout>

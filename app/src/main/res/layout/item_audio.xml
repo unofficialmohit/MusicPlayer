@@ -17,11 +17,13 @@
     <ImageView
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:background="@drawable/musicbutton"/>
+        android:background="@drawable/musicbutton"
+        android:id="@+id/artImgView"/>
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+
         >
     <TextView
         android:layout_width="wrap_content"
@@ -31,6 +33,7 @@
         android:textStyle="bold"
         android:singleLine="true"
         android:layout_marginLeft="10dp"
+        android:textColor="#F8E2E2"
         />
     <TextView
         android:layout_width="wrap_content"
@@ -39,6 +42,7 @@
         android:textSize="14dp"
         android:layout_marginLeft="15dp"
         android:singleLine="true"
+        android:textColor="#F8E2E2"
         />
     </LinearLayout>
 

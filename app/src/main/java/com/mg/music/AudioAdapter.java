@@ -3,11 +3,19 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import java.util.List;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> {
 public List<AudioFile> audioFiles;
@@ -21,11 +29,13 @@ public AudioAdapter(List<AudioFile> audioFiles){
     static class ViewHolder extends RecyclerView.ViewHolder{
         TextView titleTextView;
         TextView artistTextView;
+        ImageView artImg;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             titleTextView= itemView.findViewById(R.id.titleTextView);
             artistTextView=itemView.findViewById(R.id.artistTextView);
+            artImg=itemView.findViewById(R.id.artImgView);
         }
     }
     private OnItemClickListener onItemClickListener;
@@ -46,6 +56,21 @@ public AudioAdapter(List<AudioFile> audioFiles){
     AudioFile audioFile=audioFiles.get(position);
     holder.titleTextView.setText(audioFile.getTitle());
     holder.artistTextView.setText(audioFile.getArtist());
+    loadAlbumArt(holder.artImg,audioFile.getAlbumArtUri());
+
+
+    //  direct album art load from storage, heavy on memory laggy ui
+    //        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+    //        retriever.setDataSource(audioFile.getFilePath());
+    //        byte[] albumArt = retriever.getEmbeddedPicture();
+    //        if (albumArt != null) {
+    //            Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
+    //            holder.artImg.setImageBitmap(albumArtBitmap);
+    //        } else {
+    //            holder.artImg.setImageResource(R.drawable.musicbutton);
+    //        }
+
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -60,6 +85,15 @@ public AudioAdapter(List<AudioFile> audioFiles){
     public int getItemCount() {
         return audioFiles.size();
     }
-
+    public void loadAlbumArt(ImageView imageView, Uri filePath) {
+        RequestOptions requestOptions = new RequestOptions()
+                .placeholder(R.drawable.musicbutton) // Placeholder image while loading
+                .error(R.drawable.musicbutton); // Error image if loading fails
+        Glide.with(imageView.getContext())
+                .load(filePath)
+                .apply(new RequestOptions()
+                        .placeholder(R.drawable.musicbutton))
+                .into(imageView);
+    }
 
 }

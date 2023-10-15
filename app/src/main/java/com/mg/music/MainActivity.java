@@ -7,10 +7,12 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
@@ -35,6 +37,8 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -301,7 +305,13 @@ public ArrayList<AudioFile> audioFiles=new ArrayList<>();
                 }
             });
             mediaPlayer.setDataSource(filePath);
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+//            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC); //depreciated
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA) // Set the usage (e.g., media playback)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC) // Set the content type (e.g., music)
+                    .build();
+
+            mediaPlayer.setAudioAttributes(audioAttributes);
             mediaPlayer.prepare();
             mediaPlayer.start();
             filePath = filePath.substring(filePath.lastIndexOf("/")+1);
@@ -310,7 +320,7 @@ public ArrayList<AudioFile> audioFiles=new ArrayList<>();
             ftiming.setText(milliSecondsToTimer(mediaPlayer.getDuration()));
 
             UpdateSeek();
-
+//            fetching album art directly from file path
             MediaMetadataRetriever retriever = new MediaMetadataRetriever();
             retriever.setDataSource(path);
             byte[] albumArt = retriever.getEmbeddedPicture();
@@ -321,6 +331,19 @@ public ArrayList<AudioFile> audioFiles=new ArrayList<>();
                 imgView.setImageResource(R.drawable.playing);
             }
             retriever.release();
+
+//            fetching album art using Glide Library (it shows delay on album art on now playing , so not suitable )
+//            AudioFile clickedAudio= audioFiles.get(pos);
+//            RequestOptions requestOptions = new RequestOptions()
+//                    .placeholder(R.drawable.playing) // Placeholder image while loading
+//                    .error(R.drawable.playing); // Error image if loading fails
+//            Glide.with(imgView.getContext())
+//                    .load(clickedAudio.getAlbumArtUri())
+//                    .apply(new RequestOptions()
+//                            .placeholder(R.drawable.playing))
+//                    .into(imgView);
+
+//                Toast.makeText(MusicList.this, clickedAudio.getFilePath(), Toast.LENGTH_SHORT).show();
 
 
         }
@@ -347,7 +370,10 @@ public ArrayList<AudioFile> audioFiles=new ArrayList<>();
                 @SuppressLint("Range") String title=cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
                 @SuppressLint("Range") String artist=cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
                 @SuppressLint("Range") String filePath= cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-                audioFiles.add(new AudioFile(title,artist,filePath));
+                long albumId=cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID));
+                Uri sArtworkUri=Uri.parse("content://media/external/audio/albumart");
+                Uri albumArtUri= ContentUris.withAppendedId(sArtworkUri,albumId);
+                audioFiles.add(new AudioFile(title,artist,filePath,albumId,albumArtUri));
             }while(cursor.moveToNext());
             cursor.close();
             Collections.sort(audioFiles, new Comparator<AudioFile>() {

@@ -2,45 +2,54 @@ package com.mg.music;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import android.Manifest;
 
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.provider.MediaStore;
-import android.view.MotionEvent;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
+
 
 public class MusicList extends AppCompatActivity {
 
     public ArrayList<AudioFile> audioFiles=new ArrayList<>();
     public AudioAdapter audioAdapter;
+    public static final int REQUEST_CODE = 1;
+    int permissionAllowed =0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        checkPermission();
         setContentView(R.layout.activity_music_list);
+        // Check if the permission is granted
+
 
         RecyclerView recyclerView=findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         audioAdapter=new AudioAdapter(audioFiles);
         recyclerView.setAdapter(audioAdapter);
-        loadAudioFiles();
+
+
+        //loadAudioFiles();
+        //now audio files are loaded from the onRequestPermission method using loadAudioFiles() method
+
         audioAdapter.setOnItemClickListener(new AudioAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
@@ -53,7 +62,25 @@ public class MusicList extends AppCompatActivity {
             }
         });
     }
+    public void checkPermission()
+    {
+        String[] permissions = {
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.READ_MEDIA_AUDIO,
+                Manifest.permission.POST_NOTIFICATIONS
+        };
 
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_CODE);
+        // Load audio files if all permissions are granted
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO) == PackageManager.PERMISSION_GRANTED ) {
+            permissionAllowed =1;
+
+        }
+        else if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED )
+        {
+            permissionAllowed =1;
+        }
+    }
     public void loadAudioFiles() {
         ContentResolver contentResolver = getContentResolver();
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -66,10 +93,13 @@ public class MusicList extends AppCompatActivity {
         );
         if(cursor!=null && cursor.moveToFirst()){
             do{
-                @SuppressLint("Range") String title=cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
-                @SuppressLint("Range") String artist=cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-                @SuppressLint("Range") String filePath= cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-                audioFiles.add(new AudioFile(title,artist,filePath));
+                String title=cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE));
+                String artist=cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST));
+                String filePath= cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
+                long albumId=cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID));
+                Uri sArtworkUri=Uri.parse("content://media/external/audio/albumart");
+                Uri albumArtUri= ContentUris.withAppendedId(sArtworkUri,albumId);
+                audioFiles.add(new AudioFile(title,artist,filePath,albumId,albumArtUri));
             }while(cursor.moveToNext());
             cursor.close();
             Collections.sort(audioFiles, new Comparator<AudioFile>() {
@@ -81,4 +111,33 @@ public class MusicList extends AppCompatActivity {
             audioAdapter.notifyDataSetChanged();
         }
     }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE) {
+            for (int i = 1; i < permissions.length; i++) {
+                if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission granted
+                    permissionAllowed = 1;
+                } else {
+                    Toast.makeText(this, "Please Grant Permission", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent();
+                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    Uri uri = Uri.fromParts("package", getPackageName(), null);
+                    intent.setData(uri);
+                    startActivity(intent);
+                    permissionAllowed = 0;
+                }
+            }
+            if(grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                permissionAllowed =1;
+            }
+            if(permissionAllowed ==1)
+            {
+                loadAudioFiles();
+            }
+
+        }
+    }
+
 }
