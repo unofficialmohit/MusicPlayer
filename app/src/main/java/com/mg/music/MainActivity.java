@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
                     shuffle = 0;
                     audioFiles.clear();
                     loadAudioFiles();
+                    filterAudioFiles(srch);
                 }
             }
         });
