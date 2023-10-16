@@ -15,7 +15,7 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:layout_below="@+id/l4"
-        android:layout_marginTop="70dp"
+        android:layout_marginTop="60dp"
         >
         <ImageButton
             android:layout_width="50dp"
@@ -48,13 +48,14 @@
     android:layout_height="wrap_content"
     android:layout_below="@+id/l2"
     android:id="@+id/seeking"
-    android:padding="10dp"
     android:orientation="vertical"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
     >
     <SeekBar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="20dp"
         android:id="@+id/seek"
         />
     <LinearLayout
@@ -66,6 +67,7 @@
             android:text="00:00"
             android:id="@+id/itiming"
             android:textColor="#F8E2E2"
+            android:layout_marginLeft="15dp"
 
             />
         <TextView
@@ -75,6 +77,7 @@
             android:textAlignment="textEnd"
             android:id="@+id/ftiming"
             android:textColor="#F8E2E2"
+            android:layout_marginRight="15dp"
 
             />
     </LinearLayout>
@@ -87,6 +90,7 @@
         android:id="@+id/l4"
         android:gravity="center"
         android:layout_below="@id/seeking"
+        android:layout_marginTop="20dp"
 
 
         >
@@ -95,7 +99,7 @@
     android:layout_height="30dp"
     android:id="@+id/repeatButton"
     android:background="@drawable/repeatall"
-    android:layout_marginRight="30dp"
+    android:layout_marginRight="20dp"
     />
         <ImageButton
             android:layout_width="60dp"
@@ -119,7 +123,7 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:background="@drawable/shuffleoff"
-            android:layout_marginLeft="30dp"
+            android:layout_marginLeft="20dp"
             android:id="@+id/shuffleButton"
 
             />
@@ -131,9 +135,12 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/img"
         android:layout_centerInParent="true"
+        android:layout_marginLeft="10dp"
         android:layout_marginTop="30dp"
+        android:layout_marginRight="10dp"
         android:layout_marginBottom="20dp"
         android:gravity="center"
+        android:orientation="vertical"
         android:paddingTop="30dp"
         android:paddingBottom="30dp">
 
@@ -150,6 +157,16 @@
             android:text="Nothing to Play"
             android:textColor="#F8E2E2"
             android:textSize="25dp"></TextView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:gravity="center"
+            android:singleLine="true"
+            android:text="ARTIST NAME"
+            android:textColor="#BCB9B9"
+            android:id="@+id/artistName"></TextView>
 
     </LinearLayout>
 

@@ -2,6 +2,7 @@ package com.mg.music;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,14 +25,19 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 
 public class MusicList extends AppCompatActivity {
+    String srch="";
+    public List<AudioFile> audioFiles=new ArrayList<>();
 
-    public ArrayList<AudioFile> audioFiles=new ArrayList<>();
+    public List<AudioFile> filteredAudioFiles ;
+
     public AudioAdapter audioAdapter;
     public static final int REQUEST_CODE = 1;
     int permissionAllowed =0;
+    public SearchView searchSong;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +56,28 @@ public class MusicList extends AppCompatActivity {
         //loadAudioFiles();
         //now audio files are loaded from the onRequestPermission method using loadAudioFiles() method
 
+        searchSong=findViewById(R.id.searchsong);
+        searchSong.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                searchSong.setIconified(false);
+            }
+        });
+        searchSong.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filterAudioFiles(newText);
+                srch=newText;
+                audioAdapter.notifyDataSetChanged();
+                return true;
+            }
+        });
+
         audioAdapter.setOnItemClickListener(new AudioAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
@@ -57,10 +85,18 @@ public class MusicList extends AppCompatActivity {
 //                Toast.makeText(MusicList.this, clickedAudio.getFilePath(), Toast.LENGTH_SHORT).show();
                 Intent intent=new Intent(MusicList.this,MainActivity.class);
                 intent.putExtra("path",Integer.toString(position));
-
+                intent.putExtra("find",srch);
                 startActivity(intent);
             }
         });
+    }
+    @Override
+    public void onBackPressed() {
+        if (!searchSong.isIconified()) {
+            searchSong.setIconified(true);
+        } else {
+            super.onBackPressed();
+        }
     }
     public void checkPermission()
     {
@@ -79,6 +115,22 @@ public class MusicList extends AppCompatActivity {
         else if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED )
         {
             permissionAllowed =1;
+        }
+    }
+    public void filterAudioFiles(String query) {
+        audioFiles.clear();
+        if(query.isEmpty()){
+            audioFiles.addAll(filteredAudioFiles);
+        }
+        else
+        {
+            for(AudioFile file:filteredAudioFiles)
+            {
+                if(file.getTitle().toLowerCase().contains(query.toLowerCase()) || file.getArtist().toLowerCase().contains(query.toLowerCase()))
+                {
+                    audioFiles.add(file);
+                }
+            }
         }
     }
     public void loadAudioFiles() {
@@ -135,6 +187,7 @@ public class MusicList extends AppCompatActivity {
             if(permissionAllowed ==1)
             {
                 loadAudioFiles();
+                filteredAudioFiles=new ArrayList<>(audioFiles);
             }
 
         }

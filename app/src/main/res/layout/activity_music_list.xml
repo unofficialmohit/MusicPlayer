@@ -5,10 +5,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MusicList"
-    android:background="#434343">
+    android:background="#000000">
+    <androidx.appcompat.widget.SearchView
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_marginLeft="10dp"
+       android:layout_marginRight="10dp"
+        android:id="@+id/searchsong"
+        ></androidx.appcompat.widget.SearchView>
 <androidx.recyclerview.widget.RecyclerView
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/recyclerView"
+    android:layout_marginTop="80dp"
+    android:layout_marginRight="10dp"
+    android:layout_marginLeft="10dp"
     />
 </RelativeLayout>

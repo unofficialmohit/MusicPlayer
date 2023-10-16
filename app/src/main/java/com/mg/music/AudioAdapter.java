@@ -12,6 +12,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import com.bumptech.glide.Glide;
@@ -19,6 +22,7 @@ import com.bumptech.glide.request.RequestOptions;
 
 public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> {
 public List<AudioFile> audioFiles;
+public List<AudioFile> filteredAudioFiles;
 public interface OnItemClickListener {
         void onItemClick(View view, int position);
 }
@@ -95,5 +99,5 @@ public AudioAdapter(List<AudioFile> audioFiles){
                         .placeholder(R.drawable.musicbutton))
                 .into(imageView);
     }
-
 }
+

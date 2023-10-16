@@ -6,8 +6,12 @@ import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.Context;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -33,6 +37,7 @@ import android.content.Intent;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
@@ -49,78 +54,77 @@ import java.util.Comparator;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-public MediaPlayer mediaPlayer;
-public TextView nowPlayingText;
-public EditText songSelection;
-public ImageView imgView;
-public SeekBar seekbar;
-public TextView itiming,ftiming;
-Drawable drawplaybutton,drawpausebutton;
-public ImageButton imageButton,pauseButton,nextButton,prevButton,repeatButton,shuffleButton;
-String path="";
-int pos;
+    public MediaPlayer mediaPlayer;
+    public TextView nowPlayingText,artistName;
+    public EditText songSelection;
+    public ImageView imgView;
+    public SeekBar seekbar;
+    public TextView itiming, ftiming;
+    Drawable drawplaybutton, drawpausebutton;
+    public ImageButton imageButton, pauseButton, nextButton, prevButton, repeatButton, shuffleButton;
+    String path = "";
+    int pos;
+    String srch="";
+    int repeat = 1;
+    int shuffle = 0;
+    public ArrayList<AudioFile> audioFiles = new ArrayList<>();
 
-int repeat=1;
-int shuffle=0;
-public ArrayList<AudioFile> audioFiles=new ArrayList<>();
+    public ArrayList<AudioFile> filteredAudioFiles;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-            imageButton=findViewById(R.id.crossed);
-            imageButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    onBackPressed();
-                }
-            });
-//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-//            NotificationChannel channel=new NotificationChannel("music_channel","Music Channel", NotificationManager.IMPORTANCE_LOW);
-//            NotificationManager notificationManager=getSystemService(NotificationManager.class);
-//            notificationManager.createNotificationChannel(channel);
-//        }
+        imageButton = findViewById(R.id.crossed);
+        imageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
+        pos = Integer.parseInt(getIntent().getStringExtra("path"));
         loadAudioFiles();
-        pos= Integer.parseInt(getIntent().getStringExtra("path"));
-        AudioFile clickedAudio= audioFiles.get(pos);
-        path=clickedAudio.getFilePath();
+
+        filteredAudioFiles = new ArrayList<>(audioFiles);
+
+        srch=getIntent().getStringExtra("find");
+        filterAudioFiles(srch);
+
+
+        AudioFile clickedAudio = audioFiles.get(pos);
+        path = clickedAudio.getFilePath();
 
         itiming = findViewById(R.id.itiming);
         ftiming = findViewById(R.id.ftiming);
 
-        shuffleButton=findViewById(R.id.shuffleButton);
+        shuffleButton = findViewById(R.id.shuffleButton);
         shuffleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-            if(shuffle ==0)
-            {
-                shuffleButton.setBackgroundResource(R.drawable.shuffleon);
-                shuffle=1;
-                Collections.shuffle(audioFiles);
+                if (shuffle == 0) {
+                    shuffleButton.setBackgroundResource(R.drawable.shuffleon);
+                    shuffle = 1;
+                    Collections.shuffle(audioFiles);
 
-            }
-            else
-            {
-                shuffleButton.setBackgroundResource(R.drawable.shuffleoff);
-                shuffle=0;
-                audioFiles.clear();
-                loadAudioFiles();
-            }
+                } else {
+                    shuffleButton.setBackgroundResource(R.drawable.shuffleoff);
+                    shuffle = 0;
+                    audioFiles.clear();
+                    loadAudioFiles();
+                }
             }
         });
 
-        repeatButton=findViewById(R.id.repeatButton);
+        repeatButton = findViewById(R.id.repeatButton);
         repeatButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(repeat==1)
-                {
-                    repeat=0;
+                if (repeat == 1) {
+                    repeat = 0;
                     repeatButton.setBackgroundResource(R.drawable.repeatone);
 
-                }
-                else
-                {
-                    repeat=1;
+                } else {
+                    repeat = 1;
                     repeatButton.setBackgroundResource(R.drawable.repeatall);
                 }
             }
@@ -130,33 +134,38 @@ public ArrayList<AudioFile> audioFiles=new ArrayList<>();
         imgView.setBackgroundResource(R.drawable.playing);
 
 
-        nowPlayingText = findViewById(R.id.nowPlayingText);
-        nowPlayingText.setSelected(true);
 
-        prevButton=findViewById(R.id.prevButton);
+
+        prevButton = findViewById(R.id.prevButton);
         prevButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(pos>0 && mediaPlayer.getCurrentPosition()<5000)
-                {
+                if (pos > 0 && mediaPlayer.getCurrentPosition() < 5000) {
                     --pos;
                 }
-                AudioFile clickedAudio= audioFiles.get(pos);
-                path=clickedAudio.getFilePath();
+                else if(pos==0 && mediaPlayer.getCurrentPosition() < 5000)
+                {
+                    pos=audioFiles.size()-1;
+                }
+                AudioFile clickedAudio = audioFiles.get(pos);
+                path = clickedAudio.getFilePath();
                 playAudio(path);
             }
         });
-        nextButton=findViewById(R.id.nextButton);
+        nextButton = findViewById(R.id.nextButton);
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-            if(pos<audioFiles.size())
-            {
-                ++pos;
-            }
-            AudioFile clickedAudio= audioFiles.get(pos);
-            path=clickedAudio.getFilePath();
-            playAudio(path);
+                if (pos < audioFiles.size()-1) {
+                    ++pos;
+                }
+                else if(pos==audioFiles.size()-1)
+                {
+                    pos=0;
+                }
+                AudioFile clickedAudio = audioFiles.get(pos);
+                path = clickedAudio.getFilePath();
+                playAudio(path);
             }
         });
 
@@ -225,13 +234,12 @@ public ArrayList<AudioFile> audioFiles=new ArrayList<>();
 
             }
         });
-        try {
-            MyApplication myapp=(MyApplication)getApplication();
-            mediaPlayer=myapp.getMediaPlayer();
-            if(path!=null)
-            {
-                playAudio(path);
 
+        try {
+            MyApplication myapp = (MyApplication) getApplication();
+            mediaPlayer = myapp.getMediaPlayer();
+            if (path != null) {
+                playAudio(path);
             }
         }
         catch (Exception ae)
@@ -314,8 +322,15 @@ public ArrayList<AudioFile> audioFiles=new ArrayList<>();
             mediaPlayer.setAudioAttributes(audioAttributes);
             mediaPlayer.prepare();
             mediaPlayer.start();
-            filePath = filePath.substring(filePath.lastIndexOf("/")+1);
-            nowPlayingText.setText(filePath);
+            AudioFile clickedAudio= audioFiles.get(pos);
+
+            nowPlayingText = findViewById(R.id.nowPlayingText);
+            nowPlayingText.setSelected(true);
+            nowPlayingText.setText(clickedAudio.getTitle());
+
+            artistName=findViewById(R.id.artistName);
+            artistName.setText(clickedAudio.getArtist());
+
 
             ftiming.setText(milliSecondsToTimer(mediaPlayer.getDuration()));
 
@@ -382,6 +397,22 @@ public ArrayList<AudioFile> audioFiles=new ArrayList<>();
                     return audioFile1.getTitle().compareTo(audioFile2.getTitle());
                 }
             });
+        }
+    }
+    public void filterAudioFiles(String query) {
+        audioFiles.clear();
+        if(query.isEmpty()){
+            audioFiles.addAll(filteredAudioFiles);
+        }
+        else
+        {
+            for(AudioFile file:filteredAudioFiles)
+            {
+                if(file.getTitle().toLowerCase().contains(query.toLowerCase()) || file.getArtist().toLowerCase().contains(query.toLowerCase()))
+                {
+                    audioFiles.add(file);
+                }
+            }
         }
     }
 //    @Override
