@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.view.View;
+import android.view.animation.ScaleAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
@@ -135,6 +136,16 @@ public class MusicList extends AppCompatActivity {
                 return true;
             }
         });
+        searchSong.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+
+                if(!searchSong.hasFocus())
+                {
+                    searchSong.setIconified(true);
+                }
+            }
+        });
 
         audioAdapter.setOnItemClickListener(new AudioAdapter.OnItemClickListener() {
             @Override
@@ -149,14 +160,6 @@ public class MusicList extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-    }
-    @Override
-    public void onBackPressed() {
-        if (!searchSong.isIconified()) {
-            searchSong.setIconified(true);
-        } else {
-            super.onBackPressed();
-        }
     }
     public void setArrow(int arrow)
     {
