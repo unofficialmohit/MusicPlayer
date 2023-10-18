@@ -67,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
     String srch="";
     int repeat = 1;
     int shuffle = 0;
+    int orderSort;
+    int sortPos;
     public ArrayList<AudioFile> audioFiles = new ArrayList<>();
 
     public ArrayList<AudioFile> filteredAudioFiles;
@@ -82,12 +84,15 @@ public class MainActivity extends AppCompatActivity {
                 onBackPressed();
             }
         });
-        pos = Integer.parseInt(getIntent().getStringExtra("path"));
+
+        pos =getIntent().getIntExtra("path",0);
+        srch=getIntent().getStringExtra("find");
+        sortPos=getIntent().getIntExtra("sortPosition",1);
+        orderSort=getIntent().getIntExtra("sortOrder",1);
         loadAudioFiles();
 
         filteredAudioFiles = new ArrayList<>(audioFiles);
 
-        srch=getIntent().getStringExtra("find");
         filterAudioFiles(srch);
 
 
@@ -383,21 +388,21 @@ public class MainActivity extends AppCompatActivity {
         );
         if(cursor!=null && cursor.moveToFirst()){
             do{
-                @SuppressLint("Range") String title=cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
-                @SuppressLint("Range") String artist=cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-                @SuppressLint("Range") String filePath= cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                String title=cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE));
+                String artist=cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST));
+                String filePath= cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
                 long albumId=cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID));
                 Uri sArtworkUri=Uri.parse("content://media/external/audio/albumart");
                 Uri albumArtUri= ContentUris.withAppendedId(sArtworkUri,albumId);
-                audioFiles.add(new AudioFile(title,artist,filePath,albumId,albumArtUri));
+                String album=cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM));
+                String ModifiedDate= cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED));
+                Long Duration=cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
+                String DateAdded=cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED));
+
+                audioFiles.add(new AudioFile(title,artist,filePath,albumId,albumArtUri,album,ModifiedDate,Duration,DateAdded));
             }while(cursor.moveToNext());
             cursor.close();
-            Collections.sort(audioFiles, new Comparator<AudioFile>() {
-                @Override
-                public int compare(AudioFile audioFile1, AudioFile audioFile2) {
-                    return audioFile1.getTitle().compareTo(audioFile2.getTitle());
-                }
-            });
+            sortMusic();
         }
     }
     public void filterAudioFiles(String query) {
@@ -413,6 +418,127 @@ public class MainActivity extends AppCompatActivity {
                 {
                     audioFiles.add(file);
                 }
+            }
+        }
+    }
+    public void sortMusic()
+    {
+        if (orderSort == 1) {
+
+
+            switch (sortPos) {
+
+                case 1:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile1.getDateAdded().compareTo(audioFile2.getDateAdded());
+                        }
+                    });
+                    break;
+                case 2:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile1.getTitle().compareTo(audioFile2.getTitle());
+                        }
+                    });
+                    break;
+                case 3:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile1.getArtist().compareTo(audioFile2.getArtist());
+                        }
+                    });
+                    break;
+                case 4:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile1.getAlbum().compareTo(audioFile2.getAlbum());
+                        }
+                    });
+                    break;
+                case 5:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile1.getModifiedDate().compareTo(audioFile2.getModifiedDate());
+                        }
+                    });
+
+                    break;
+                case 6:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return Long.compare(audioFile1.getDuration(), audioFile2.getDuration());
+                        }
+                    });
+
+                    break;
+                default:
+                    Toast.makeText(this, "Something went Wrong", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+        else
+        {
+            switch (sortPos) {
+                case 1:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile2.getDateAdded().compareTo(audioFile1.getDateAdded());
+                        }
+                    });
+                    break;
+                case 2:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile2.getTitle().compareTo(audioFile1.getTitle());
+                        }
+                    });
+                    break;
+                case 3:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile2.getArtist().compareTo(audioFile1.getArtist());
+                        }
+                    });
+                    break;
+                case 4:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile2.getAlbum().compareTo(audioFile1.getAlbum());
+                        }
+                    });
+                    break;
+                case 5:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile2.getModifiedDate().compareTo(audioFile1.getModifiedDate());
+                        }
+                    });
+
+                    break;
+                case 6:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return Long.compare(audioFile2.getDuration(), audioFile1.getDuration());
+                        }
+                    });
+                    break;
+
+                default:
+                    Toast.makeText(this, "Something went Wrong", Toast.LENGTH_SHORT).show();
+                    break;
             }
         }
     }

@@ -12,12 +12,54 @@
         android:layout_marginLeft="10dp"
        android:layout_marginRight="10dp"
         android:id="@+id/searchsong"
-        ></androidx.appcompat.widget.SearchView>
+
+        >
+
+    </androidx.appcompat.widget.SearchView>
+
+   <LinearLayout
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:layout_below="@id/searchsong"
+       android:orientation="horizontal">
+
+       <Spinner
+        android:id="@+id/spinner1"
+        android:layout_width="130dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="8dp"
+        android:dropDownWidth="123dp"
+        android:background="@android:drawable/spinner_dropdown_background"
+        android:layout_gravity="center"
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:spinnerMode="dropdown"/>
+      <ImageButton
+          android:layout_width="20dp"
+          android:layout_height="30dp"
+          android:background="@drawable/downarrow"
+          android:scaleType="fitXY"
+          android:id="@+id/orderSort">
+
+      ></ImageButton>
+       <TextView
+           android:id="@+id/totalSong"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:textAlignment="textEnd"
+           android:text="0 Songs"
+           android:layout_marginRight="20dp"
+           android:textColor="@color/white"
+           android:textSize="15dp"
+           >
+
+       </TextView>
+   </LinearLayout>
 <androidx.recyclerview.widget.RecyclerView
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/recyclerView"
-    android:layout_marginTop="80dp"
+    android:layout_marginTop="140dp"
     android:layout_marginRight="10dp"
     android:layout_marginLeft="10dp"
     />

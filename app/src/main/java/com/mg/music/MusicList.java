@@ -20,6 +20,11 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -30,6 +35,7 @@ import java.util.List;
 
 public class MusicList extends AppCompatActivity {
     String srch="";
+
     public List<AudioFile> audioFiles=new ArrayList<>();
 
     public List<AudioFile> filteredAudioFiles ;
@@ -38,7 +44,12 @@ public class MusicList extends AppCompatActivity {
     public static final int REQUEST_CODE = 1;
     int permissionAllowed =0;
     public SearchView searchSong;
-
+    public Spinner spinner;
+    public TextView totalSong;
+    public ImageButton sortArrow;
+    public int orderSort=0;
+    public int sortPos=1;
+    public static final String[] paths = {"Date Added","Name", "Artist Name","Album Name", "Modified Date","Duration"};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,12 +57,59 @@ public class MusicList extends AppCompatActivity {
         setContentView(R.layout.activity_music_list);
         // Check if the permission is granted
 
+        totalSong=findViewById(R.id.totalSong);
 
+        spinner=findViewById(R.id.spinner1);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                R.layout.spinner_item,paths);
+        adapter.setDropDownViewResource(R.layout.spinner_item);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+                switch (position) {
+                    case 0:
+                        sortMusic(1);
+                        break;
+                    case 1:
+                        sortMusic(2);
+                        break;
+                    case 2:
+                        sortMusic(3);
+                        break;
+                    case 3:
+                        sortMusic(4);
+                        break;
+                    case 4:
+                        sortMusic(5);
+                        break;
+                    case 5:
+                        sortMusic(6);
+                        break;
+                    default:
+                        Toast.makeText(MusicList.this, "Something is wrong", Toast.LENGTH_SHORT).show();
+                        break;
+
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
         RecyclerView recyclerView=findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         audioAdapter=new AudioAdapter(audioFiles);
         recyclerView.setAdapter(audioAdapter);
 
+        sortArrow=findViewById(R.id.orderSort);
+        sortArrow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setArrow(orderSort);
+            }
+        });
 
         //loadAudioFiles();
         //now audio files are loaded from the onRequestPermission method using loadAudioFiles() method
@@ -84,8 +142,10 @@ public class MusicList extends AppCompatActivity {
 //                AudioFile clickedAudio= audioFiles.get(position);
 //                Toast.makeText(MusicList.this, clickedAudio.getFilePath(), Toast.LENGTH_SHORT).show();
                 Intent intent=new Intent(MusicList.this,MainActivity.class);
-                intent.putExtra("path",Integer.toString(position));
+                intent.putExtra("path",position);
                 intent.putExtra("find",srch);
+                intent.putExtra("sortOrder",orderSort);
+                intent.putExtra("sortPosition",sortPos);
                 startActivity(intent);
             }
         });
@@ -97,6 +157,24 @@ public class MusicList extends AppCompatActivity {
         } else {
             super.onBackPressed();
         }
+    }
+    public void setArrow(int arrow)
+    {
+        if(arrow==1)
+        {
+
+            orderSort=0;
+            sortArrow.setBackgroundResource(R.drawable.downarrow);
+            sortMusic(sortPos);
+
+        }
+        else
+        {
+            orderSort=1;
+            sortArrow.setBackgroundResource(R.drawable.uparrow);
+            sortMusic(sortPos);
+        }
+
     }
     public void checkPermission()
     {
@@ -151,16 +229,152 @@ public class MusicList extends AppCompatActivity {
                 long albumId=cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID));
                 Uri sArtworkUri=Uri.parse("content://media/external/audio/albumart");
                 Uri albumArtUri= ContentUris.withAppendedId(sArtworkUri,albumId);
-                audioFiles.add(new AudioFile(title,artist,filePath,albumId,albumArtUri));
+                String album=cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM));
+                String ModifiedDate= cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED));
+                long Duration=cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
+                String DateAdded=cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED));
+
+                audioFiles.add(new AudioFile(title,artist,filePath,albumId,albumArtUri,album,ModifiedDate,Duration,DateAdded));
             }while(cursor.moveToNext());
             cursor.close();
-            Collections.sort(audioFiles, new Comparator<AudioFile>() {
-                @Override
-                public int compare(AudioFile audioFile1, AudioFile audioFile2) {
-                    return audioFile1.getTitle().compareTo(audioFile2.getTitle());
-                }
-            });
-            audioAdapter.notifyDataSetChanged();
+            totalSong.setText(audioFiles.size()-1 +" Songs");
+            sortMusic(1);
+//            audioAdapter.notifyDataSetChanged();
+        }
+    }
+    public void sortMusic(int pos)
+    {
+        sortPos=pos;
+        if (orderSort == 1) {
+
+
+            switch (pos) {
+
+                case 1:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile1.getDateAdded().compareTo(audioFile2.getDateAdded());
+                        }
+                    });
+                    audioAdapter.notifyDataSetChanged();
+                    break;
+                case 2:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile1.getTitle().compareTo(audioFile2.getTitle());
+                        }
+                    });
+                    audioAdapter.notifyDataSetChanged();
+                    break;
+                case 3:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile1.getArtist().compareTo(audioFile2.getArtist());
+                        }
+                    });
+                    audioAdapter.notifyDataSetChanged();
+                    break;
+                case 4:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile1.getAlbum().compareTo(audioFile2.getAlbum());
+                        }
+                    });
+                    audioAdapter.notifyDataSetChanged();
+                    break;
+                case 5:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile1.getModifiedDate().compareTo(audioFile2.getModifiedDate());
+                        }
+                    });
+
+                    audioAdapter.notifyDataSetChanged();
+                    break;
+                case 6:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return Long.compare(audioFile1.getDuration(), audioFile2.getDuration());
+                        }
+                    });
+
+                    audioAdapter.notifyDataSetChanged();
+                    break;
+                default:
+                    Toast.makeText(this, "Something went Wrong", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+        else
+        {
+            switch (pos) {
+                case 1:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile2.getDateAdded().compareTo(audioFile1.getDateAdded());
+                        }
+                    });
+                    audioAdapter.notifyDataSetChanged();
+                    break;
+                case 2:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile2.getTitle().compareTo(audioFile1.getTitle());
+                        }
+                    });
+                    audioAdapter.notifyDataSetChanged();
+                    break;
+                case 3:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile2.getArtist().compareTo(audioFile1.getArtist());
+                        }
+                    });
+                    audioAdapter.notifyDataSetChanged();
+                    break;
+                case 4:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile2.getAlbum().compareTo(audioFile1.getAlbum());
+                        }
+                    });
+                    audioAdapter.notifyDataSetChanged();
+                    break;
+                case 5:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return audioFile2.getModifiedDate().compareTo(audioFile1.getModifiedDate());
+                        }
+                    });
+
+                    audioAdapter.notifyDataSetChanged();
+                    break;
+                case 6:
+                    Collections.sort(audioFiles, new Comparator<AudioFile>() {
+                        @Override
+                        public int compare(AudioFile audioFile1, AudioFile audioFile2) {
+                            return Long.compare(audioFile2.getDuration(), audioFile1.getDuration());
+                        }
+                    });
+
+                    audioAdapter.notifyDataSetChanged();
+                    break;
+
+                default:
+                    Toast.makeText(this, "Something went Wrong", Toast.LENGTH_SHORT).show();
+                    break;
+            }
         }
     }
     @Override
