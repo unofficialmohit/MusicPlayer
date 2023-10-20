@@ -71,6 +71,7 @@ public class MusicList extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         checkPermission();
+        overridePendingTransition(R.anim.slide_down, R.anim.slide_up);
         setContentView(R.layout.activity_music_list);
         MyApplication myapp = (MyApplication) getApplication();
         mediaPlayer = myapp.getMediaPlayer();
@@ -90,12 +91,52 @@ public class MusicList extends AppCompatActivity {
         thumb.setShapeAppearanceModel(shapeAppearanceModel);
         songName=findViewById(R.id.currentSongName);
         songName.setSelected(true);
-        songName.setOnClickListener(new View.OnClickListener() {
+        songName.setOnTouchListener(new OnSwipeTouchListener(MusicList.this){
+
+            public void onSwipeLeft() {
+                if(hasPlayed)
+                {
+                if (MusicList.pos < MusicList.NowPlayingList.size()-1) {
+                    ++MusicList.pos;
+                }
+                else if(MusicList.pos==MusicList.NowPlayingList.size()-1)
+                {
+                    MusicList.pos=0;
+                }
+                AudioFile clickedAudio = MusicList.NowPlayingList.get(MusicList.pos);
+                songName.setText(clickedAudio.getTitle());
+                playAudio(clickedAudio.getFilePath());
+                playPauseButton.setBackgroundResource(R.drawable.pausebutton);
+                }
+            }
+
+            public void onSwipeRight() {
+                if (hasPlayed) {
+                    if (MusicList.pos > 0 && MusicList.mediaPlayer.getCurrentPosition() < 5000) {
+                        --MusicList.pos;
+                    } else if (MusicList.pos == 0 && MusicList.mediaPlayer.getCurrentPosition() < 5000) {
+                        MusicList.pos = MusicList.NowPlayingList.size() - 1;
+                    }
+                    AudioFile clickedAudio = MusicList.NowPlayingList.get(MusicList.pos);
+                    songName.setText(clickedAudio.getTitle());
+                    playAudio(clickedAudio.getFilePath());
+                    playPauseButton.setBackgroundResource(R.drawable.pausebutton);
+                }
+            }
+
             @Override
-            public void onClick(View view) {
+            public void onSwipeUp() {
+                NowPlay();
+
+            }
+
+            public void onSingleTap() {
                 NowPlay();
             }
+
+
         });
+
         playPauseButton=findViewById(R.id.playPauseListPage);
         playPauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -559,6 +600,7 @@ public class MusicList extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        overridePendingTransition(R.anim.slide_up, R.anim.slide_down);
         if(hasPlayed) {
             if(mediaPlayer.isPlaying())
             {

@@ -30,27 +30,19 @@ import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
     public TextView nowPlayingText,artistName;
-    public EditText songSelection;
     public ShapeableImageView imgView;
     public SeekBar seekbar;
     public TextView itiming, ftiming;
     Drawable drawplaybutton, drawpausebutton;
-    public ImageButton imageButton, pauseButton, nextButton, prevButton, repeatButton, shuffleButton;
+    public ImageButton  pauseButton, nextButton, prevButton, repeatButton, shuffleButton;
     String path = "";
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        overridePendingTransition(R.anim.slide_up, R.anim.slide_down); // Apply slide-up and fade-out animations
+
         setContentView(R.layout.activity_main);
-        imageButton = findViewById(R.id.crossed);
-        imageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onBackPressed();
-            }
-        });
 
         AudioFile clickedAudio = MusicList.NowPlayingList.get(MusicList.pos);
         path = clickedAudio.getFilePath();
@@ -128,6 +120,13 @@ public class MainActivity extends AppCompatActivity {
 
         imgView = findViewById(R.id.art);
         imgView.setBackgroundResource(R.drawable.playing);
+        imgView.setOnTouchListener(new OnSwipeTouchListener(MainActivity.this)
+        {
+            public void onSwipeDown() {
+                onBackPressed();
+            }
+
+        });
         ShapeAppearanceModel shapeAppearanceModel = new
                 ShapeAppearanceModel()
                 .toBuilder()
@@ -490,8 +489,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
-
 
 //    @Override
 //    protected void onDestroy() {
