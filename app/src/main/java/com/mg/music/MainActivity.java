@@ -149,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
                     MusicList.pos=MusicList.NowPlayingList.size()-1;
                 }
                 AudioFile clickedAudio= MusicList.NowPlayingList.get(MusicList.pos);
+                pauseButton.setBackgroundResource(R.drawable.pausebutton);
                 path = clickedAudio.getFilePath();
                 playAudio(path);
             }
@@ -166,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 AudioFile clickedAudio = MusicList.NowPlayingList.get(MusicList.pos);
                 path = clickedAudio.getFilePath();
+                pauseButton.setBackgroundResource(R.drawable.pausebutton);
                 playAudio(path);
             }
         });
