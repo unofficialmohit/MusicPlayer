@@ -32,7 +32,7 @@
         android:id="@+id/img"
         android:gravity="center"
         android:layout_marginTop="70dp">
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:layout_width="300dp"
             android:layout_height="300dp"
             android:visibility="visible"
@@ -40,7 +40,7 @@
             android:scaleType="fitXY"
             >
 
-        </ImageView>
+        </com.google.android.material.imageview.ShapeableImageView>
     </LinearLayout>
 
     <LinearLayout
@@ -159,14 +159,14 @@
             android:textSize="25dp"></TextView>
 
         <TextView
+            android:id="@+id/artistName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:gravity="center"
             android:singleLine="true"
             android:text="ARTIST NAME"
-            android:textColor="#BCB9B9"
-            android:id="@+id/artistName"></TextView>
+            android:textColor="#BCB9B9"></TextView>
 
     </LinearLayout>
 

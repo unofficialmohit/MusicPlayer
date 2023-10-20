@@ -19,6 +19,9 @@ import java.util.List;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.shape.CornerFamily;
+import com.google.android.material.shape.ShapeAppearanceModel;
 
 public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> {
 public List<AudioFile> audioFiles;
@@ -33,13 +36,19 @@ public AudioAdapter(List<AudioFile> audioFiles){
     static class ViewHolder extends RecyclerView.ViewHolder{
         TextView titleTextView;
         TextView artistTextView;
-        ImageView artImg;
+        ShapeableImageView artImg;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             titleTextView= itemView.findViewById(R.id.titleTextView);
             artistTextView=itemView.findViewById(R.id.artistTextView);
             artImg=itemView.findViewById(R.id.artImgView);
+            ShapeAppearanceModel shapeAppearanceModel = new
+                    ShapeAppearanceModel()
+                    .toBuilder()
+                    .setAllCorners(CornerFamily.ROUNDED, 25) // Set radius for rounded corners
+            .build();
+            artImg.setShapeAppearanceModel(shapeAppearanceModel);
         }
     }
     private OnItemClickListener onItemClickListener;
@@ -92,11 +101,11 @@ public AudioAdapter(List<AudioFile> audioFiles){
     public void loadAlbumArt(ImageView imageView, Uri filePath) {
         RequestOptions requestOptions = new RequestOptions()
                 .placeholder(R.drawable.musicbutton) // Placeholder image while loading
-                .error(R.drawable.musicbutton); // Error image if loading fails
+                .error(R.drawable.musicbutton); // Error image if loading fails=
         Glide.with(imageView.getContext())
                 .load(filePath)
-                .apply(new RequestOptions()
-                        .placeholder(R.drawable.musicbutton))
+                .apply(requestOptions)
+                .thumbnail(Glide.with(imageView.getContext()).load(filePath))
                 .into(imageView);
     }
 }

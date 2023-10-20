@@ -8,39 +8,45 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
-
-import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.AudioAttributes;
+import android.media.MediaMetadataRetriever;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.view.View;
-import android.view.animation.ScaleAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.shape.CornerFamily;
+import com.google.android.material.shape.ShapeAppearanceModel;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-
 public class MusicList extends AppCompatActivity {
     String srch="";
-
-    public List<AudioFile> audioFiles=new ArrayList<>();
+    public static List<AudioFile> audioFiles=new ArrayList<>();
 
     public List<AudioFile> filteredAudioFiles ;
-
+    public static List<AudioFile> NowPlayingList= new ArrayList<>();
     public AudioAdapter audioAdapter;
     public static final int REQUEST_CODE = 1;
     int permissionAllowed =0;
@@ -51,12 +57,68 @@ public class MusicList extends AppCompatActivity {
     public int orderSort=0;
     public int sortPos=1;
     public static final String[] paths = {"Date Added","Name", "Artist Name","Album Name", "Modified Date","Duration"};
+    public static ShapeableImageView thumb;
+    public static TextView songName;
+    public static ImageButton playPauseButton;
+    public static int pos=0;
+    public static int repeat=1;
+    public static int shuffle=0;
+    public static MediaPlayer mediaPlayer;
+    boolean hasPlayed=false;
+    boolean isLoaded=false;
+    public static ArrayList<AudioFile> cacheAudioFiles =new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         checkPermission();
         setContentView(R.layout.activity_music_list);
+        MyApplication myapp = (MyApplication) getApplication();
+        mediaPlayer = myapp.getMediaPlayer();
         // Check if the permission is granted
+        thumb=findViewById(R.id.thumb);
+        thumb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+            NowPlay();
+            }
+        });
+        ShapeAppearanceModel shapeAppearanceModel = new
+                ShapeAppearanceModel()
+                .toBuilder()
+                .setAllCorners(CornerFamily.ROUNDED, 25) // Set radius for rounded corners
+                .build();
+        thumb.setShapeAppearanceModel(shapeAppearanceModel);
+        songName=findViewById(R.id.currentSongName);
+        songName.setSelected(true);
+        songName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                NowPlay();
+            }
+        });
+        playPauseButton=findViewById(R.id.playPauseListPage);
+        playPauseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+            if(!hasPlayed)
+            {
+                    Toast.makeText(myapp, "Nothing to Play", Toast.LENGTH_SHORT).show();
+                    return;
+            }
+            if(mediaPlayer.isPlaying())
+            {
+                mediaPlayer.pause();
+                playPauseButton.setBackgroundResource(R.drawable.playbutton);
+            }
+            else
+            {
+                mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
+                mediaPlayer.start();
+                playPauseButton.setBackgroundResource(R.drawable.pausebutton);
+            }
+            }
+        });
+
 
         totalSong=findViewById(R.id.totalSong);
 
@@ -150,17 +212,97 @@ public class MusicList extends AppCompatActivity {
         audioAdapter.setOnItemClickListener(new AudioAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-//                AudioFile clickedAudio= audioFiles.get(position);
-//                Toast.makeText(MusicList.this, clickedAudio.getFilePath(), Toast.LENGTH_SHORT).show();
-                Intent intent=new Intent(MusicList.this,MainActivity.class);
-                intent.putExtra("path",position);
-                intent.putExtra("find",srch);
-                intent.putExtra("sortOrder",orderSort);
-                intent.putExtra("sortPosition",sortPos);
-                startActivity(intent);
+//              AudioFile clickedAudio= audioFiles.get(position);
+//              Toast.makeText(MusicList.this, clickedAudio.getFilePath(), Toast.LENGTH_SHORT).show();
+
+//                intent.putExtra("path",position);
+                pos=position;   //sending position to static variable to use in mainActivity
+                NowPlayingList.clear();;
+                NowPlayingList.addAll(audioFiles);
+                AudioFile clickedAudio=NowPlayingList.get(position);
+                songName.setText(clickedAudio.getTitle());
+                shuffle=0;
+                playPauseButton.setBackgroundResource(R.drawable.pausebutton);
+
+                hasPlayed=true;
+
+                playAudio(clickedAudio.getFilePath());
+
             }
         });
     }
+
+    public void NowPlay() {
+        if(!hasPlayed)
+        {
+            Toast.makeText(this, "Nothing to Play", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Intent intent=new Intent(MusicList.this,MainActivity.class);
+        startActivity(intent);
+    }
+    public void playAudio(String filePath) {
+
+        if (filePath == null || !new File(filePath).exists()) {
+            Toast.makeText(this, "Invalid file path", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (MusicList.mediaPlayer.isPlaying()) {
+            MusicList.mediaPlayer.stop();
+        }
+        MusicList.mediaPlayer.reset();
+
+        try{
+            MusicList.mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    if(MusicList.repeat==0) {
+                        mediaPlayer.start();  //if want repeat mode on
+                    }
+                    else{
+                        if (MusicList.pos < MusicList.NowPlayingList.size()-1) {
+                            ++MusicList.pos;
+                        }
+                        else if(MusicList.pos==MusicList.NowPlayingList.size()-1)
+                        {
+                            MusicList.pos=0;
+                        }
+                        AudioFile clickedAudio= MusicList.NowPlayingList.get(MusicList.pos);
+                        clickedAudio.getFilePath();
+                        playAudio(clickedAudio.getFilePath());
+                    }
+                }
+            });
+            MusicList.mediaPlayer.setDataSource(filePath);
+//            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC); //depreciated
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA) // Set the usage (e.g., media playback)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC) // Set the content type (e.g., music)
+                    .build();
+            MusicList.mediaPlayer.setAudioAttributes(audioAttributes);
+            MusicList.mediaPlayer.prepare();
+            MusicList.mediaPlayer.start();
+//            AudioFile clickedAudio= MusicList.NowPlayingList.get(MusicList.pos);
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(filePath);
+            byte[] albumArt = retriever.getEmbeddedPicture();
+            if (albumArt != null) {
+                Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
+                thumb.setImageBitmap(albumArtBitmap);
+            } else {
+                thumb.setImageResource(R.drawable.musicbutton);
+            }
+            retriever.release();
+
+        }
+        catch (Exception ae)
+        {
+            ae.printStackTrace();
+            Toast.makeText(this, ae.toString(), Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
     public void setArrow(int arrow)
     {
         if(arrow==1)
@@ -190,12 +332,11 @@ public class MusicList extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, permissions, REQUEST_CODE);
         // Load audio files if all permissions are granted
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO) == PackageManager.PERMISSION_GRANTED ) {
-            permissionAllowed =1;
-
+            permissionAllowed=1;
         }
         else if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED )
         {
-            permissionAllowed =1;
+            permissionAllowed=1;
         }
     }
     public void filterAudioFiles(String query) {
@@ -379,6 +520,7 @@ public class MusicList extends AppCompatActivity {
                     break;
             }
         }
+
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -402,12 +544,48 @@ public class MusicList extends AppCompatActivity {
                 permissionAllowed =1;
             }
             if(permissionAllowed ==1)
-            {
+            {   if(!isLoaded)
+                {
                 loadAudioFiles();
+                isLoaded=true;
+                }
+                NowPlayingList.addAll(audioFiles);
                 filteredAudioFiles=new ArrayList<>(audioFiles);
             }
 
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(hasPlayed) {
+            if(mediaPlayer.isPlaying())
+            {
+                playPauseButton.setBackgroundResource(R.drawable.pausebutton);
+            }
+            else
+            {
+                playPauseButton.setBackgroundResource(R.drawable.playbutton);
+            }
+            AudioFile clickedAudio = MusicList.NowPlayingList.get(MusicList.pos);
+            MusicList.songName.setText(clickedAudio.getTitle());
+            try {
+
+                MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+                retriever.setDataSource(clickedAudio.getFilePath());
+                byte[] albumArt = retriever.getEmbeddedPicture();
+                if (albumArt != null) {
+                    Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
+                    MusicList.thumb.setImageBitmap(albumArtBitmap);
+                } else {
+                    MusicList.thumb.setImageResource(R.drawable.musicbutton);
+                }
+                retriever.release();
+                MusicList.songName.setText(clickedAudio.getTitle());
+            } catch (Exception ae) {
+                Toast.makeText(MusicList.this, ae.toString(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 }
