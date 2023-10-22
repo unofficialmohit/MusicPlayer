@@ -116,7 +116,7 @@
     <LinearLayout
         android:id="@+id/l2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="150dp"
         android:layout_below="@id/img"
         android:layout_centerInParent="true"
         android:layout_marginLeft="10dp"

@@ -17,7 +17,6 @@ public class CustomUncaughtExceptionHandler implements Thread.UncaughtExceptionH
         // Handle the uncaught exception here
         // You can log the exception, display an error message, or navigate to the first activity
         // For example, to navigate to the first activity, you can use an Intent:
-
         Intent intent = new Intent(context, MusicList.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);

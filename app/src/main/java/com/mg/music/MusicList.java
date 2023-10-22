@@ -1,5 +1,4 @@
 package com.mg.music;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -13,7 +12,6 @@ import android.content.ContentUris;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,16 +29,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.shape.CornerFamily;
 import com.google.android.material.shape.ShapeAppearanceModel;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,7 +50,7 @@ public class MusicList extends AppCompatActivity {
     public static List<AudioFile> NowPlayingList= new ArrayList<>();
     public AudioAdapter audioAdapter;
     public static final int REQUEST_CODE = 1;
-    int permissionAllowed =0;
+    int permissionAllowed = 0;
     public SearchView searchSong;
     public Spinner spinner;
     public TextView totalSong;
@@ -87,7 +82,7 @@ public class MusicList extends AppCompatActivity {
         thumb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-            NowPlay();
+                NowPlay();
             }
         });
         ShapeAppearanceModel shapeAppearanceModel = new
@@ -99,7 +94,6 @@ public class MusicList extends AppCompatActivity {
         songName=findViewById(R.id.currentSongName);
         songName.setSelected(true);
         songName.setOnTouchListener(new OnSwipeTouchListener(MusicList.this){
-
             public void onSwipeLeft() {
                 if(hasPlayed)
                 {
@@ -116,7 +110,6 @@ public class MusicList extends AppCompatActivity {
                 playPauseButton.setBackgroundResource(R.drawable.pausebutton);
                 }
             }
-
             public void onSwipeRight() {
                 if (hasPlayed) {
                     if (MusicList.pos > 0 && MusicList.mediaPlayer.getCurrentPosition() < 5000) {
@@ -130,13 +123,11 @@ public class MusicList extends AppCompatActivity {
                     playPauseButton.setBackgroundResource(R.drawable.pausebutton);
                 }
             }
-
             @Override
             public void onSwipeUp() {
                 NowPlay();
 
             }
-
             public void onSingleTap() {
                 NowPlay();
             }
