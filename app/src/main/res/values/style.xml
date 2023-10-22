@@ -4,4 +4,8 @@
         <item name="android:textColorPrimary">@color/white</item>
         <item name="android:textColorHint">@color/white</item>
     </style>
+    <style name="RecyclerViewScrollBarStyle">
+        <item name="android:scrollbarSize">5dp</item> <!-- Adjust the size as needed -->
+    </style>
+
 </resources>
