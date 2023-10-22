@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:layout_marginTop="2dp"
     android:layout_marginBottom="2dp"
@@ -20,33 +19,38 @@
         android:background="@drawable/musicbutton"
         android:layout_marginLeft="8dp"
         android:id="@+id/artImgView"
+        android:scaleType="fitXY"
         />
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="vertical">
 
-        >
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/titleTextView"
-        android:textSize="18dp"
-        android:textStyle="bold"
-        android:singleLine="true"
-        android:layout_marginLeft="10dp"
-        android:textColor="#F8E2E2"
-        />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/artistTextView"
-        android:textSize="14dp"
-        android:layout_marginLeft="15dp"
-        android:singleLine="true"
-        android:textColor="#F8E2E2"
-        />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/titleTextView"
+            android:textSize="16dp"
+            android:singleLine="true"
+            android:layout_marginLeft="15dp"
+
+            android:textColor="#F8E2E2" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/artistTextView"
+                android:textSize="12dp"
+                android:layout_marginLeft="15dp"
+                android:singleLine="true"
+                android:textColor="#F8E2E2"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/duration"
+                android:textSize="10dp"
+                android:layout_marginLeft="15dp"
+                android:singleLine="true" />
     </LinearLayout>
-
-
 </LinearLayout>

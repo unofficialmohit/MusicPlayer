@@ -2,8 +2,10 @@ package com.mg.music;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.AudioAttributes;
 import android.media.MediaMetadataRetriever;
@@ -126,6 +128,14 @@ public class MainActivity extends AppCompatActivity {
                 onBackPressed();
             }
 
+            public void onSwipeLeft()
+            {
+                nextSong();
+            }
+            public void onSwipeRight()
+            {
+                prevSong();
+            }
         });
         ShapeAppearanceModel shapeAppearanceModel = new
                 ShapeAppearanceModel()
@@ -141,34 +151,14 @@ public class MainActivity extends AppCompatActivity {
         prevButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (MusicList.pos > 0 && MusicList.mediaPlayer.getCurrentPosition() < 5000) {
-                    --MusicList.pos;
-                }
-                else if(MusicList.pos==0 && MusicList.mediaPlayer.getCurrentPosition() < 5000)
-                {
-                    MusicList.pos=MusicList.NowPlayingList.size()-1;
-                }
-                AudioFile clickedAudio= MusicList.NowPlayingList.get(MusicList.pos);
-                pauseButton.setBackgroundResource(R.drawable.pausebutton);
-                path = clickedAudio.getFilePath();
-                playAudio(path);
+                prevSong();
             }
         });
         nextButton = findViewById(R.id.nextButton);
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (MusicList.pos < MusicList.NowPlayingList.size()-1) {
-                    ++MusicList.pos;
-                }
-                else if(MusicList.pos==MusicList.NowPlayingList.size()-1)
-                {
-                    MusicList.pos=0;
-                }
-                AudioFile clickedAudio = MusicList.NowPlayingList.get(MusicList.pos);
-                path = clickedAudio.getFilePath();
-                pauseButton.setBackgroundResource(R.drawable.pausebutton);
-                playAudio(path);
+               nextSong();
             }
         });
         drawpausebutton = ContextCompat.getDrawable(this, R.drawable.pausebutton);
@@ -219,6 +209,7 @@ public class MainActivity extends AppCompatActivity {
 //        });
 
         seekbar = findViewById(R.id.seek);
+        seekbar.setProgressTintList(ColorStateList.valueOf(Color.parseColor("#FFFFFF")));
         seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -264,6 +255,35 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, ae.toString(), Toast.LENGTH_SHORT).show();
         }
     }
+
+    public void prevSong() {
+        if (MusicList.pos > 0 && MusicList.mediaPlayer.getCurrentPosition() < 5000) {
+            --MusicList.pos;
+        }
+        else if(MusicList.pos==0 && MusicList.mediaPlayer.getCurrentPosition() < 5000)
+        {
+            MusicList.pos=MusicList.NowPlayingList.size()-1;
+        }
+        AudioFile clickedAudio= MusicList.NowPlayingList.get(MusicList.pos);
+        pauseButton.setBackgroundResource(R.drawable.pausebutton);
+        path = clickedAudio.getFilePath();
+        playAudio(path);
+    }
+
+    public void nextSong() {
+        if (MusicList.pos < MusicList.NowPlayingList.size()-1) {
+            ++MusicList.pos;
+        }
+        else if(MusicList.pos==MusicList.NowPlayingList.size()-1)
+        {
+            MusicList.pos=0;
+        }
+        AudioFile clickedAudio = MusicList.NowPlayingList.get(MusicList.pos);
+        path = clickedAudio.getFilePath();
+        pauseButton.setBackgroundResource(R.drawable.pausebutton);
+        playAudio(path);
+    }
+
     public void UpdateSeek()
     {
         if(MusicList.mediaPlayer!=null)

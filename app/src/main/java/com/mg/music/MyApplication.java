@@ -7,6 +7,7 @@ public class MyApplication extends Application {
     public void onCreate(){
         super.onCreate();
         mediaPlayer=new MediaPlayer();
+        Thread.setDefaultUncaughtExceptionHandler(new CustomUncaughtExceptionHandler(this));
     }
     public MediaPlayer getMediaPlayer(){
         return mediaPlayer;

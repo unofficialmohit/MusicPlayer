@@ -12,6 +12,8 @@
         android:layout_marginLeft="10dp"
        android:layout_marginRight="10dp"
         android:id="@+id/searchsong"
+        android:theme="@style/AppSearchView"
+
         >
 
     </androidx.appcompat.widget.SearchView>
@@ -66,7 +68,23 @@
     android:layout_marginLeft="10dp"
     android:layout_marginBottom="70dp"
     />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/recyclerView"
+        android:layout_marginTop="-75dp"
+        android:background="#1E1B1B"
 
+
+        >
+<SeekBar
+    android:id="@+id/seekBar"
+    android:layout_width="match_parent"
+    android:layout_height="5dp"
+    android:paddingTop="2dp"
+    android:splitTrack="false"
+    ></SeekBar>
+    </LinearLayout>
     <LinearLayout
         android:id="@+id/miniPlayer"
         android:layout_width="match_parent"
@@ -83,12 +101,13 @@
         android:background="@drawable/musicbutton"
         android:id="@+id/thumb"
         android:scaleType="fitXY"
+        android:layout_marginStart="70dp"
         >
 
     </com.google.android.material.imageview.ShapeableImageView>
         <TextView
             android:id="@+id/currentSongName"
-            android:layout_width="260dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:ellipsize="marquee"
             android:focusable="true"
@@ -113,6 +132,7 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@drawable/playbutton"
+            android:layout_marginEnd="70dp"
 
 
             ></ImageButton>

@@ -23,6 +23,8 @@ import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.shape.CornerFamily;
 import com.google.android.material.shape.ShapeAppearanceModel;
 
+import org.w3c.dom.Text;
+
 public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> {
 public List<AudioFile> audioFiles;
 public List<AudioFile> filteredAudioFiles;
@@ -36,10 +38,12 @@ public AudioAdapter(List<AudioFile> audioFiles){
     static class ViewHolder extends RecyclerView.ViewHolder{
         TextView titleTextView;
         TextView artistTextView;
+        TextView duration;
         ShapeableImageView artImg;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            duration=itemView.findViewById(R.id.duration);
             titleTextView= itemView.findViewById(R.id.titleTextView);
             artistTextView=itemView.findViewById(R.id.artistTextView);
             artImg=itemView.findViewById(R.id.artImgView);
@@ -67,8 +71,23 @@ public AudioAdapter(List<AudioFile> audioFiles){
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
     AudioFile audioFile=audioFiles.get(position);
+    String timerString="";
+    long milliseconds=audioFile.getDuration();
+        int hours=(int)(milliseconds/(1000*3600));
+        int minutes=(int)(milliseconds%(1000*3600))/(1000*60);
+        int seconds=(int)(milliseconds%(1000*60))/(1000);
+        if(hours>0)
+        {
+            timerString=String.format("%02d:%02d:%02d",hours,minutes,seconds);
+        }
+        else
+        {
+            timerString=String.format("%02d:%02d",minutes,seconds);
+        }
+
     holder.titleTextView.setText(audioFile.getTitle());
     holder.artistTextView.setText(audioFile.getArtist());
+    holder.duration.setText(timerString);
     loadAlbumArt(holder.artImg,audioFile.getAlbumArtUri());
 
 

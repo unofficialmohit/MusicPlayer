@@ -12,21 +12,27 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.AudioAttributes;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -67,6 +73,7 @@ public class MusicList extends AppCompatActivity {
     boolean hasPlayed=false;
     boolean isLoaded=false;
     public static ArrayList<AudioFile> cacheAudioFiles =new ArrayList<>();
+    public static SeekBar seekBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -250,6 +257,17 @@ public class MusicList extends AppCompatActivity {
             }
         });
 
+        seekBar=findViewById(R.id.seekBar);
+        seekBar.getThumb().mutate().setAlpha(0);
+        seekBar.setProgressTintList(ColorStateList.valueOf(Color.parseColor("#FFFFFF")));
+
+        seekBar.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return true;
+            }
+        });
+
         audioAdapter.setOnItemClickListener(new AudioAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
@@ -261,6 +279,7 @@ public class MusicList extends AppCompatActivity {
                 NowPlayingList.clear();;
                 NowPlayingList.addAll(audioFiles);
                 AudioFile clickedAudio=NowPlayingList.get(position);
+
                 songName.setText(clickedAudio.getTitle());
                 shuffle=0;
                 playPauseButton.setBackgroundResource(R.drawable.pausebutton);
@@ -315,6 +334,7 @@ public class MusicList extends AppCompatActivity {
                 }
             });
             MusicList.mediaPlayer.setDataSource(filePath);
+
 //            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC); //depreciated
             AudioAttributes audioAttributes = new AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_MEDIA) // Set the usage (e.g., media playback)
@@ -322,6 +342,7 @@ public class MusicList extends AppCompatActivity {
                     .build();
             MusicList.mediaPlayer.setAudioAttributes(audioAttributes);
             MusicList.mediaPlayer.prepare();
+            UpdateSeek();
             MusicList.mediaPlayer.start();
 //            AudioFile clickedAudio= MusicList.NowPlayingList.get(MusicList.pos);
             MediaMetadataRetriever retriever = new MediaMetadataRetriever();
@@ -342,6 +363,23 @@ public class MusicList extends AppCompatActivity {
             Toast.makeText(this, ae.toString(), Toast.LENGTH_SHORT).show();
         }
 
+    }
+    public void UpdateSeek()
+    {
+        if(MusicList.mediaPlayer!=null)
+        {
+            int currentPosition=MusicList.mediaPlayer.getCurrentPosition();
+            int totalDuration=MusicList.mediaPlayer.getDuration();
+            seekBar.setMax(totalDuration);
+            seekBar.setProgress(currentPosition);
+            Handler handler=new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    UpdateSeek();
+                }
+            },100);
+        }
     }
 
     public void setArrow(int arrow)
