@@ -437,6 +437,7 @@ public class MainActivity extends AppCompatActivity {
                         clickedAudio.getFilePath();
                         playAudio(clickedAudio.getFilePath());
                     }
+                    showNotification(R.drawable.pausebutton);
                 }
             });
 

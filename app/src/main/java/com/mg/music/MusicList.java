@@ -396,6 +396,7 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
                         clickedAudio.getFilePath();
                         playAudio(clickedAudio.getFilePath());
                     }
+                    showNotification(R.drawable.pausebutton);
                 }
             });
             MusicList.mediaPlayer.setDataSource(filePath);
