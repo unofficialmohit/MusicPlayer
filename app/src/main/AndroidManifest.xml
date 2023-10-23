@@ -21,7 +21,8 @@
             android:name=".MusicList"
             android:exported="true"
             android:windowSoftInputMode="adjustPan"
-            android:configChanges="screenSize|orientation">
+            android:configChanges="screenSize|orientation"
+            android:launchMode="singleTask">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
@@ -32,6 +33,18 @@
             android:exported="false">
 
         </activity>
+
+        <service android:name="com.mg.music.MusicService"
+            android:enabled="true"/>
+        <receiver android:name="com.mg.music.NotificationReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="NEXT"/>
+                <action android:name="PREVIOUS"/>
+                <action android:name="PLAY"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

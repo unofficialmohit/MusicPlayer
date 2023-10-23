@@ -1,19 +1,21 @@
 package com.mg.music;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import static com.mg.music.MyApplication.ACTION_NEXT;
+import static com.mg.music.MyApplication.ACTION_PLAY;
+import static com.mg.music.MyApplication.ACTION_PREV;
+import static com.mg.music.MyApplication.Channel_ID_1;
+
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,10 +24,13 @@ import android.media.AudioAttributes;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -36,16 +41,26 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.shape.CornerFamily;
 import com.google.android.material.shape.ShapeAppearanceModel;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class MusicList extends AppCompatActivity {
+public class MusicList extends AppCompatActivity implements ActionPlaying, ServiceConnection {
     String srch="";
     public static List<AudioFile> audioFiles=new ArrayList<>();
 
@@ -68,18 +83,26 @@ public class MusicList extends AppCompatActivity {
     public static int repeat=1;
     public static int shuffle=0;
     public static MediaPlayer mediaPlayer;
-    boolean hasPlayed=false;
+    public static boolean hasPlayed=false;
     boolean isLoaded=false;
     public static ArrayList<AudioFile> cacheAudioFiles =new ArrayList<>();
     public static SeekBar seekBar;
+    public MusicService musicService;
+    public static MediaSessionCompat mediaSession;
+    public static int isMediaActive=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         checkPermission();
         overridePendingTransition(R.anim.slide_down, R.anim.slide_up);
         setContentView(R.layout.activity_music_list);
+        audioFiles.clear();
         MyApplication myapp = (MyApplication) getApplication();
         mediaPlayer = myapp.getMediaPlayer();
+        mediaSession=new MediaSessionCompat(this,"PlayerAudio");
+        Intent intent =new Intent(MusicList.this,MusicService.class);
+        bindService(intent,this,BIND_AUTO_CREATE);
+
         // Check if the permission is granted
         thumb=findViewById(R.id.thumb);
         thumb.setOnClickListener(new View.OnClickListener() {
@@ -99,34 +122,14 @@ public class MusicList extends AppCompatActivity {
         songName.setOnTouchListener(new OnSwipeTouchListener(MusicList.this){
 
             public void onSwipeLeft() {
-                if(hasPlayed)
-                {
-                if (MusicList.pos < MusicList.NowPlayingList.size()-1) {
-                    ++MusicList.pos;
-                }
-                else if(MusicList.pos==MusicList.NowPlayingList.size()-1)
-                {
-                    MusicList.pos=0;
-                }
-                AudioFile clickedAudio = MusicList.NowPlayingList.get(MusicList.pos);
-                songName.setText(clickedAudio.getTitle());
-                playAudio(clickedAudio.getFilePath());
-                playPauseButton.setBackgroundResource(R.drawable.pausebutton);
-                }
+                nextSong();
+                showNotification(R.drawable.pausebutton);
             }
 
             public void onSwipeRight() {
-                if (hasPlayed) {
-                    if (MusicList.pos > 0 && MusicList.mediaPlayer.getCurrentPosition() < 5000) {
-                        --MusicList.pos;
-                    } else if (MusicList.pos == 0 && MusicList.mediaPlayer.getCurrentPosition() < 5000) {
-                        MusicList.pos = MusicList.NowPlayingList.size() - 1;
-                    }
-                    AudioFile clickedAudio = MusicList.NowPlayingList.get(MusicList.pos);
-                    songName.setText(clickedAudio.getTitle());
-                    playAudio(clickedAudio.getFilePath());
-                    playPauseButton.setBackgroundResource(R.drawable.pausebutton);
-                }
+               prevSong();
+                showNotification(R.drawable.pausebutton);
+
             }
 
             @Override
@@ -155,12 +158,16 @@ public class MusicList extends AppCompatActivity {
             {
                 mediaPlayer.pause();
                 playPauseButton.setBackgroundResource(R.drawable.playbutton);
+                showNotification(R.drawable.playbutton);
+
             }
             else
             {
                 mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
                 mediaPlayer.start();
                 playPauseButton.setBackgroundResource(R.drawable.pausebutton);
+                showNotification(R.drawable.pausebutton);
+
             }
             }
         });
@@ -277,7 +284,13 @@ public class MusicList extends AppCompatActivity {
                 NowPlayingList.clear();;
                 NowPlayingList.addAll(audioFiles);
                 AudioFile clickedAudio=NowPlayingList.get(position);
-
+                try{
+                showNotification(R.drawable.pausebutton);
+                }
+                catch (Exception ae)
+                {
+                    Toast.makeText(myapp, ae.toString() ,Toast.LENGTH_SHORT).show();
+                }
                 songName.setText(clickedAudio.getTitle());
                 shuffle=0;
                 playPauseButton.setBackgroundResource(R.drawable.pausebutton);
@@ -290,13 +303,67 @@ public class MusicList extends AppCompatActivity {
         });
     }
 
+//    @Override
+//    protected void onPause() {
+//
+//        super.onPause();
+//        unbindService(this);
+//    }
+
+    private void prevSong() {
+        if (hasPlayed) {
+            if (MusicList.pos > 0 && MusicList.mediaPlayer.getCurrentPosition() < 5000) {
+                --MusicList.pos;
+            } else if (MusicList.pos == 0 && MusicList.mediaPlayer.getCurrentPosition() < 5000) {
+                MusicList.pos = MusicList.NowPlayingList.size() - 1;
+            }
+            AudioFile clickedAudio = MusicList.NowPlayingList.get(MusicList.pos);
+            songName.setText(clickedAudio.getTitle());
+            playAudio(clickedAudio.getFilePath());
+            playPauseButton.setBackgroundResource(R.drawable.pausebutton);
+            if(!mediaPlayer.isPlaying())
+            {
+                showNotification(R.drawable.pausebutton);
+            }
+            else
+            {
+                showNotification(R.drawable.playbutton);
+            }
+        }
+    }
+
+    private void nextSong() {
+        if(hasPlayed)
+        {
+            if (MusicList.pos < MusicList.NowPlayingList.size()-1) {
+                ++MusicList.pos;
+            }
+            else if(MusicList.pos==MusicList.NowPlayingList.size()-1)
+            {
+                MusicList.pos=0;
+            }
+            AudioFile clickedAudio = MusicList.NowPlayingList.get(MusicList.pos);
+            songName.setText(clickedAudio.getTitle());
+            playAudio(clickedAudio.getFilePath());
+            playPauseButton.setBackgroundResource(R.drawable.pausebutton);
+            if(!mediaPlayer.isPlaying())
+            {
+                showNotification(R.drawable.pausebutton);
+            }
+            else
+            {
+                showNotification(R.drawable.playbutton);
+            }
+        }
+    }
+    public static Intent intent;
     public void NowPlay() {
         if(!hasPlayed)
         {
             Toast.makeText(this, "Nothing to Play", Toast.LENGTH_SHORT).show();
             return;
         }
-        Intent intent=new Intent(MusicList.this,MainActivity.class);
+        intent=new Intent(MusicList.this,MainActivity.class);
         startActivity(intent);
     }
     public void playAudio(String filePath) {
@@ -665,5 +732,104 @@ public class MusicList extends AppCompatActivity {
                 Toast.makeText(MusicList.this, ae.toString(), Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    @Override
+    public void nextClicked() {
+    nextSong();
+    showNotification(R.drawable.pausebutton);
+
+    }
+
+    @Override
+    public void prevClicked() {
+    prevSong();
+        showNotification(R.drawable.pausebutton);
+    }
+
+    @Override
+    public void playClicked() {
+    if(!mediaPlayer.isPlaying())
+    {
+        mediaPlayer.start();
+        playPauseButton.setBackgroundResource(R.drawable.pausebutton);
+        showNotification(R.drawable.pausebutton);
+    }
+    else
+    {
+        mediaPlayer.pause();
+        playPauseButton.setBackgroundResource(R.drawable.playbutton);
+        showNotification(R.drawable.playbutton);
+    }
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+        MusicService.MyBinder binder=(MusicService.MyBinder) iBinder;
+        musicService=binder.getService();
+        musicService.setCallBack(this);
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName componentName) {
+    musicService=null;
+    }
+
+    public void showNotification(int playPauseButton)
+    {       Intent intent,prevIntent,playIntent,nextIntent;
+        PendingIntent contentIntent,prevPendingIntent,playPendingIntent,nextPendingIntent;
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.S) {
+            intent = new Intent(this, MusicList.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+            prevIntent = new Intent(this, NotificationReceiver.class).setAction(ACTION_PREV);
+            prevPendingIntent = PendingIntent.getBroadcast(this, 0, prevIntent, PendingIntent.FLAG_IMMUTABLE);
+            playIntent = new Intent(this, NotificationReceiver.class).setAction(ACTION_PLAY);
+            playPendingIntent = PendingIntent.getBroadcast(this, 0, playIntent, PendingIntent.FLAG_IMMUTABLE);
+            nextIntent = new Intent(this, NotificationReceiver.class).setAction(ACTION_NEXT);
+            nextPendingIntent = PendingIntent.getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_IMMUTABLE);
+        }
+        else
+        {
+            intent = new Intent(this, MusicList.class);
+            contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_MUTABLE);
+            prevIntent = new Intent(this, NotificationReceiver.class).setAction(ACTION_PREV);
+            prevPendingIntent = PendingIntent.getBroadcast(this, 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            playIntent = new Intent(this, NotificationReceiver.class).setAction(ACTION_PLAY);
+            playPendingIntent = PendingIntent.getBroadcast(this, 0, playIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            nextIntent = new Intent(this, NotificationReceiver.class).setAction(ACTION_NEXT);
+            nextPendingIntent = PendingIntent.getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+        Bitmap picture = null;
+        try{
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(NowPlayingList.get(pos).getFilePath());
+        byte[] albumArt = retriever.getEmbeddedPicture();
+        if (albumArt != null) {
+            picture = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
+        } else {
+            picture=BitmapFactory.decodeResource(this.getResources(),R.drawable.playing);
+        }
+        retriever.release();
+        }
+        catch (Exception ae)
+        {
+            Toast.makeText(this, ae.toString(), Toast.LENGTH_SHORT).show();
+        }
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, Channel_ID_1)
+                .setSmallIcon(R.drawable.musicbutton)
+                .setLargeIcon(picture)
+                .setContentTitle(NowPlayingList.get(pos).getTitle())
+                .setContentText(NowPlayingList.get(pos).getArtist())
+                .addAction(R.drawable.prevbutton, "Previous", prevPendingIntent)
+                .addAction(playPauseButton, "PLAY", playPendingIntent)
+                .addAction(R.drawable.nextbutton, "NEXT", nextPendingIntent)
+                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle())   //.setMediaSession(mediaSession.getSessionToken())
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setContentIntent(contentIntent)
+                .setSilent(true);
+        Notification notification = builder.build();
+        NotificationManager notificationManager=(NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(0,notification);
     }
 }
