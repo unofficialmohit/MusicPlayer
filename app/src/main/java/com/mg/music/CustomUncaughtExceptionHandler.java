@@ -3,7 +3,6 @@ package com.mg.music;
 
 import android.content.Context;
 import android.content.Intent;
-import android.widget.Toast;
 
 public class CustomUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
     private final Context context;

@@ -8,6 +8,7 @@ import static com.mg.music.MyApplication.Channel_ID_1;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -15,6 +16,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -187,13 +189,19 @@ public class MainActivity extends AppCompatActivity {
         pauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 if (MusicList.mediaPlayer != null) {
                     if (MusicList.mediaPlayer.isPlaying()) {
+
                         MusicList.mediaPlayer.pause();
                         showNotification(R.drawable.playbutton);
                         pauseButton.setBackgroundResource(R.drawable.playbutton);
+                        MusicList.audioManager.abandonAudioFocus(MusicList.audioFocusListener);
+                        MusicList.isFocused=0;
+
 
                     } else {
+                        getAudioFocus();
                         MusicList.mediaPlayer.seekTo(MusicList.mediaPlayer.getCurrentPosition());
                         MusicList.mediaPlayer.start();
                         pauseButton.setBackgroundResource(R.drawable.pausebutton);
@@ -205,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
                 {
                     Toast.makeText(MainActivity.this, "Nothing to Play", Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
 //        stopButton=findViewById(R.id.stopButton);
@@ -316,8 +325,7 @@ public class MainActivity extends AppCompatActivity {
                 .addAction(R.drawable.prevbutton,"Previous",prevPendingIntent)
                 .addAction(playPauseButton,"PLAY",playPendingIntent)
                 .addAction(R.drawable.nextbutton,"NEXT",nextPendingIntent)
-                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
-                        .setMediaSession(MusicList.mediaSession.getSessionToken()))   //.setMediaSession(mediaSession.getSessionToken())
+                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle())   //.setMediaSession(mediaSession.getSessionToken())
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setContentIntent(contentIntent)
                 .setSilent(true)
@@ -339,6 +347,23 @@ public class MainActivity extends AppCompatActivity {
         path = clickedAudio.getFilePath();
         showNotification(R.drawable.pausebutton);
         playAudio(path);
+    }
+    public void getAudioFocus()
+    {
+        if (MusicList.isFocused == 0) {
+            MusicList.isFocused=1;
+            MusicList.audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            MusicList.audioFocusListener = new MyAudioFocusChangeListener(MainActivity.this);
+            int result = MusicList.audioManager.requestAudioFocus(
+                    MusicList.audioFocusListener,
+                    AudioManager.STREAM_MUSIC, // Audio stream type
+                    AudioManager.AUDIOFOCUS_GAIN // Request permanent audio focus
+            );
+
+            if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                Toast.makeText(MainActivity.this, "Audio Focus Not Available", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     public void nextSong() {
@@ -393,6 +418,7 @@ public class MainActivity extends AppCompatActivity {
     public void resumeAudio(String filePath) {
 
         if (MusicList.mediaPlayer.isPlaying()) {
+            getAudioFocus();
             seekbar.setProgress(MusicList.mediaPlayer.getCurrentPosition(),true);
             pauseButton.setBackgroundResource(R.drawable.pausebutton);
         }
@@ -476,7 +502,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
     public void playAudio(String filePath) {
-
+    getAudioFocus();
         if (filePath == null || !new File(filePath).exists()) {
             Toast.makeText(this, "Invalid file path", Toast.LENGTH_SHORT).show();
             return;

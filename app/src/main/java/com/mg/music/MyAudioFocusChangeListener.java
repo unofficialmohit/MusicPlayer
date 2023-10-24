@@ -38,8 +38,10 @@ public class MyAudioFocusChangeListener implements AudioManager.OnAudioFocusChan
                 // Resume playback or start playback if paused
                 // You can play your audio here
                 if (!MusicList.mediaPlayer.isPlaying()) {
-                     MusicList.mediaPlayer.start();
+                    MusicList.isFocused=1;
+                    MusicList.mediaPlayer.start();
                      MusicList.playPauseButton.setBackgroundResource(R.drawable.pausebutton);
+                    if(MusicList.isMediaActive==1)
                      MainActivity.pauseButton.setBackgroundResource(R.drawable.pausebutton);
                     showNotification(R.drawable.pausebutton);
 
@@ -48,13 +50,21 @@ public class MyAudioFocusChangeListener implements AudioManager.OnAudioFocusChan
                 }
                 break;
             case AudioManager.AUDIOFOCUS_LOSS:
-                MusicList.mediaPlayer.stop();
-                MusicList.mediaPlayer.release();
+                if (MusicList.mediaPlayer.isPlaying()) {
+                    MusicList.mediaPlayer.pause();
+                    MusicList.isFocused=0;
+                    MusicList.playPauseButton.setBackgroundResource(R.drawable.playbutton);
+                    if(MusicList.isMediaActive==1)
+                        MainActivity.pauseButton.setBackgroundResource(R.drawable.playbutton);
+                    showNotification(R.drawable.playbutton);
+                }
                 break;
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                 if (MusicList.mediaPlayer.isPlaying()) {
                     MusicList.mediaPlayer.pause();
+                    MusicList.isFocused=0;
                     MusicList.playPauseButton.setBackgroundResource(R.drawable.playbutton);
+                    if(MusicList.isMediaActive==1)
                     MainActivity.pauseButton.setBackgroundResource(R.drawable.playbutton);
                     showNotification(R.drawable.playbutton);
                 }

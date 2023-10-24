@@ -92,6 +92,9 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
     public MusicService musicService;
     public static MediaSessionCompat mediaSession;
     public static int isMediaActive=0;
+    public static int isFocused=0;
+    public static MyAudioFocusChangeListener audioFocusListener;
+    public static AudioManager audioManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -151,20 +154,23 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
         playPauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
             if(!hasPlayed)
             {
                     Toast.makeText(myapp, "Nothing to Play", Toast.LENGTH_SHORT).show();
                     return;
             }
+
             if(mediaPlayer.isPlaying())
-            {
+            {   isFocused=0;
+                audioManager.abandonAudioFocus(audioFocusListener);
                 mediaPlayer.pause();
                 playPauseButton.setBackgroundResource(R.drawable.playbutton);
                 showNotification(R.drawable.playbutton);
 
             }
             else
-            {
+            {   getAudioFocus();
                 mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
                 mediaPlayer.start();
                 playPauseButton.setBackgroundResource(R.drawable.pausebutton);
@@ -274,18 +280,18 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
                 return true;
             }
         });
-        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        MyAudioFocusChangeListener audioFocusListener = new MyAudioFocusChangeListener(this);
-
-        int result = audioManager.requestAudioFocus(
-                audioFocusListener,
-                AudioManager.STREAM_MUSIC, // Audio stream type
-                AudioManager.AUDIOFOCUS_GAIN // Request permanent audio focus
-        );
-
-        if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-            Toast.makeText(myapp, "Audio Focus Not Available", Toast.LENGTH_SHORT).show();
-        }
+//        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+//        MyAudioFocusChangeListener audioFocusListener = new MyAudioFocusChangeListener(this);
+//
+//        int result = audioManager.requestAudioFocus(
+//                audioFocusListener,
+//                AudioManager.STREAM_MUSIC, // Audio stream type
+//                AudioManager.AUDIOFOCUS_GAIN // Request permanent audio focus
+//        );
+//
+//        if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+//            Toast.makeText(myapp, "Audio Focus Not Available", Toast.LENGTH_SHORT).show();
+//        }
 
         audioAdapter.setOnItemClickListener(new AudioAdapter.OnItemClickListener() {
             @Override
@@ -294,29 +300,44 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
 //              Toast.makeText(MusicList.this, clickedAudio.getFilePath(), Toast.LENGTH_SHORT).show();
 
 //                intent.putExtra("path",position);
-                pos=position;   //sending position to static variable to use in mainActivity
-                NowPlayingList.clear();;
+                pos = position;   //sending position to static variable to use in mainActivity
+                NowPlayingList.clear();
+                ;
                 NowPlayingList.addAll(audioFiles);
-                AudioFile clickedAudio=NowPlayingList.get(position);
-                try{
-                showNotification(R.drawable.pausebutton);
-                }
-                catch (Exception ae)
-                {
-                    Toast.makeText(myapp, ae.toString() ,Toast.LENGTH_SHORT).show();
+                AudioFile clickedAudio = NowPlayingList.get(position);
+                try {
+                    showNotification(R.drawable.pausebutton);
+                } catch (Exception ae) {
+                    Toast.makeText(myapp, ae.toString(), Toast.LENGTH_SHORT).show();
                 }
                 songName.setText(clickedAudio.getTitle());
-                shuffle=0;
+                shuffle = 0;
                 playPauseButton.setBackgroundResource(R.drawable.pausebutton);
 
-                hasPlayed=true;
+                hasPlayed = true;
 
                 playAudio(clickedAudio.getFilePath());
 
             }
         });
     }
+public void getAudioFocus()
+{
+    if (isFocused == 0) {
+        isFocused=1;
+        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        audioFocusListener = new MyAudioFocusChangeListener(MusicList.this);
+        int result = audioManager.requestAudioFocus(
+                audioFocusListener,
+                AudioManager.STREAM_MUSIC, // Audio stream type
+                AudioManager.AUDIOFOCUS_GAIN // Request permanent audio focus
+        );
 
+        if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            Toast.makeText(MusicList.this, "Audio Focus Not Available", Toast.LENGTH_SHORT).show();
+        }
+    }
+}
 //    @Override
 //    protected void onPause() {
 //
@@ -381,7 +402,7 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
         startActivity(intent);
     }
     public void playAudio(String filePath) {
-
+        getAudioFocus();
         if (filePath == null || !new File(filePath).exists()) {
             Toast.makeText(this, "Invalid file path", Toast.LENGTH_SHORT).show();
             return;
@@ -774,14 +795,15 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
     @Override
     public void playClicked() {
     if(!mediaPlayer.isPlaying())
-    {
+    {   getAudioFocus();
         showNotification(R.drawable.pausebutton);
         mediaPlayer.start();
         playPauseButton.setBackgroundResource(R.drawable.pausebutton);
 
     }
     else
-    {
+    {   isFocused=0;
+        audioManager.abandonAudioFocus(audioFocusListener);
         showNotification(R.drawable.playbutton);
         mediaPlayer.pause();
         playPauseButton.setBackgroundResource(R.drawable.playbutton);
