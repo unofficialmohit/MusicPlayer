@@ -36,7 +36,14 @@
         </activity>
 
         <service android:name="com.mg.music.MusicService"
-            android:enabled="true"/>
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+            </intent-filter>
+
+        </service>
         <receiver android:name="com.mg.music.NotificationReceiver"
             android:enabled="true"
             android:exported="true">
@@ -44,8 +51,18 @@
                 <action android:name="NEXT"/>
                 <action android:name="PREVIOUS"/>
                 <action android:name="PLAY"/>
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
             </intent-filter>
         </receiver>
+            <receiver android:name="androidx.media.session.MediaButtonReceiver"
+                android:exported="true"
+                android:enabled="true"
+                >
+                <intent-filter>
+                    <action android:name="android.intent.action.MEDIA_BUTTON" />
+                </intent-filter>
+            </receiver>
+
     </application>
 
 </manifest>

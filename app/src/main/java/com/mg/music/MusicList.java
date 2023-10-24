@@ -12,6 +12,7 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
@@ -21,6 +22,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -272,6 +274,18 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
                 return true;
             }
         });
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        MyAudioFocusChangeListener audioFocusListener = new MyAudioFocusChangeListener(this);
+
+        int result = audioManager.requestAudioFocus(
+                audioFocusListener,
+                AudioManager.STREAM_MUSIC, // Audio stream type
+                AudioManager.AUDIOFOCUS_GAIN // Request permanent audio focus
+        );
+
+        if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            Toast.makeText(myapp, "Audio Focus Not Available", Toast.LENGTH_SHORT).show();
+        }
 
         audioAdapter.setOnItemClickListener(new AudioAdapter.OnItemClickListener() {
             @Override
@@ -671,8 +685,8 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE) {
-            for (int i = 1; i < permissions.length; i++) {
-                if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+            if(Build.VERSION.SDK_INT>Build.VERSION_CODES.S) {
+                if (grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                     // Permission granted
                     permissionAllowed = 1;
                 } else {
@@ -685,19 +699,28 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
                     permissionAllowed = 0;
                 }
             }
+            else{
             if(grantResults[0]==PackageManager.PERMISSION_GRANTED){
                 permissionAllowed =1;
             }
-            if(permissionAllowed ==1)
-            {   if(!isLoaded)
-                {
-                loadAudioFiles();
-                isLoaded=true;
+            else {
+                Toast.makeText(this, "Please Grant Permission", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+                permissionAllowed = 0;
+            }
+            }
+            if(permissionAllowed ==1) {
+                if (!isLoaded) {
+                    loadAudioFiles();
+                    isLoaded = true;
                 }
                 NowPlayingList.addAll(audioFiles);
-                filteredAudioFiles=new ArrayList<>(audioFiles);
+                filteredAudioFiles = new ArrayList<>(audioFiles);
             }
-
         }
     }
 
@@ -779,7 +802,7 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
     }
 
     public void showNotification(int playPauseButton)
-    {       Intent intent,prevIntent,playIntent,nextIntent;
+    {   Intent intent,prevIntent,playIntent,nextIntent;
         PendingIntent contentIntent,prevPendingIntent,playPendingIntent,nextPendingIntent;
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.S) {
             intent = new Intent(this, MusicList.class);

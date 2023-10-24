@@ -30,34 +30,26 @@ public class MusicService extends Service {
 
 
     @Override
-        public int onStartCommand (Intent intent,int flags, int startId){
-            String actionName=intent.getStringExtra("myactionname");
-                switch (actionName)
-            {
+        public int onStartCommand (Intent intent,int flags, int startId) {
+        if (intent != null) {
+            String actionName = intent.getStringExtra("myactionname");
+            switch (actionName) {
                 case ACTION_PLAY:
-                    if(actionPlaying!=null)
-                    {
+                    if (actionPlaying != null) {
                         actionPlaying.playClicked();
-                        if(MusicList.isMediaActive==1)
-                        {
-                            if(MusicList.mediaPlayer.isPlaying())
-                            {
+                        if (MusicList.isMediaActive == 1) {
+                            if (MusicList.mediaPlayer.isPlaying()) {
                                 MusicList.playPauseButton.setBackgroundResource(R.drawable.pausebutton);
                                 MainActivity.pauseButton.setBackgroundResource(R.drawable.pausebutton);
-                            }else
-                            {
+                            } else {
                                 MusicList.playPauseButton.setBackgroundResource(R.drawable.playbutton);
                                 MainActivity.pauseButton.setBackgroundResource(R.drawable.playbutton);
 
                             }
-                        }
-                        else
-                        {
-                            if(MusicList.mediaPlayer.isPlaying())
-                            {
+                        } else {
+                            if (MusicList.mediaPlayer.isPlaying()) {
                                 MusicList.playPauseButton.setBackgroundResource(R.drawable.pausebutton);
-                            }else
-                            {
+                            } else {
                                 MusicList.playPauseButton.setBackgroundResource(R.drawable.playbutton);
 
                             }
@@ -65,23 +57,23 @@ public class MusicService extends Service {
                     }
                     break;
                 case ACTION_NEXT:
-                    if(actionPlaying!=null)
-                    {
+                    if (actionPlaying != null) {
                         actionPlaying.nextClicked();
                         UpdateNowPlaying();
 
                     }
                     break;
                 case ACTION_PREV:
-                    if(actionPlaying!=null)
-                    {
+                    if (actionPlaying != null) {
                         actionPlaying.prevClicked();
                         UpdateNowPlaying();
                     }
                     break;
             }
-                return START_STICKY;
+
         }
+        return START_STICKY;
+    }
         public void setCallBack(ActionPlaying actionPlaying){
                 this.actionPlaying=actionPlaying;
         }
