@@ -27,7 +27,9 @@ public class MusicService extends Service {
                 return MusicService.this;
             }
         }
-        @Override
+
+
+    @Override
         public int onStartCommand (Intent intent,int flags, int startId){
             String actionName=intent.getStringExtra("myactionname");
                 switch (actionName)

@@ -17,9 +17,9 @@
         android:paddingStart="20dp"
         >
         <com.google.android.material.imageview.ShapeableImageView
-            android:layout_width="340dp"
+            android:layout_width="165pt"
 
-            android:layout_height="340dp"
+            android:layout_height="165pt"
             android:visibility="visible"
             android:id="@+id/art"
             android:scaleType="fitXY"
@@ -31,7 +31,7 @@
     <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-        android:paddingStart="400dp"
+        android:paddingStart="200pt"
         android:layout_below="@id/l2"
     android:id="@+id/seeking"
     android:orientation="vertical"
@@ -73,7 +73,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingStart="400dp"
+        android:paddingStart="200pt"
         android:padding="2dp"
         android:id="@+id/l4"
         android:gravity="center"
@@ -96,8 +96,8 @@
             android:id="@+id/prevButton" />
         <ImageButton
             android:id="@+id/playpauseButton"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="35pt"
+            android:layout_height="35pt"
             android:backgroundTint="#FFFFFF"
             android:background="@drawable/pausebutton"
             android:layout_marginRight="15dp"
@@ -125,7 +125,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="20dp"
-        android:paddingStart="400dp"
+        android:paddingStart="200pt"
         android:gravity="center"
         android:orientation="vertical"
         android:paddingTop="30dp"

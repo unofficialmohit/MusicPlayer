@@ -752,15 +752,17 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
     public void playClicked() {
     if(!mediaPlayer.isPlaying())
     {
+        showNotification(R.drawable.pausebutton);
         mediaPlayer.start();
         playPauseButton.setBackgroundResource(R.drawable.pausebutton);
-        showNotification(R.drawable.pausebutton);
+
     }
     else
     {
+        showNotification(R.drawable.playbutton);
         mediaPlayer.pause();
         playPauseButton.setBackgroundResource(R.drawable.playbutton);
-        showNotification(R.drawable.playbutton);
+
     }
     }
 
@@ -832,5 +834,6 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
         Notification notification = builder.build();
         NotificationManager notificationManager=(NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.notify(0,notification);
+
     }
 }

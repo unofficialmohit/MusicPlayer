@@ -8,7 +8,6 @@ public class NotificationReceiver extends BroadcastReceiver {
     public static final String ACTION_NEXT="NEXT";
     public static final String ACTION_PREV="PREVIOUS";
     public static final String ACTION_PLAY="PLAY";
-    public static final String ACTION_CONTENT="CONTENT";
 
     @Override
     public void onReceive(Context context, Intent intent) {
