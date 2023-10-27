@@ -3,6 +3,7 @@ package com.mg.music;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.widget.Toast;
 
 public class NotificationReceiver extends BroadcastReceiver {
     public static final String ACTION_NEXT="NEXT";
@@ -12,9 +13,12 @@ public class NotificationReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Intent intent1=new Intent(context,MusicService.class);
-if(intent.getAction()!=null)
-{           intent1.putExtra("myactionname",intent.getAction());
+        if(intent.getAction()!=null)
+        {           intent1.putExtra("myactionname",intent.getAction());
             context.startService(intent1);
-}
+        }
+        String intentAction = intent.getAction();
+        Toast.makeText(context, "DEBUG MEDIA", Toast.LENGTH_SHORT).show();
     }
+
 }

@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -216,6 +217,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
 //        stopButton=findViewById(R.id.stopButton);
 //        stopButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -474,6 +476,14 @@ public class MainActivity extends AppCompatActivity {
             nowPlayingText = findViewById(R.id.nowPlayingText);
             nowPlayingText.setSelected(true);
             nowPlayingText.setText(clickedAudio.getTitle());
+            LinearLayout linearLayout=findViewById(R.id.l2);
+            linearLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    NowPlayingPopup nowPlayingPopup = new NowPlayingPopup(MainActivity.this);
+                    nowPlayingPopup.show(getSupportFragmentManager(), "NowPlayingPopup");
+                }
+            });
 
             artistName=findViewById(R.id.artistName);
             artistName.setText(clickedAudio.getArtist());

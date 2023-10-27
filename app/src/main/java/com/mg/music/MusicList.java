@@ -9,6 +9,7 @@ import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -57,6 +58,8 @@ import com.google.android.material.shape.CornerFamily;
 import com.google.android.material.shape.ShapeAppearanceModel;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -95,12 +98,18 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
     public static int isFocused=0;
     public static MyAudioFocusChangeListener audioFocusListener;
     public static AudioManager audioManager;
+    public ProgressDialog dialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         checkPermission();
         overridePendingTransition(R.anim.slide_down, R.anim.slide_up);
         setContentView(R.layout.activity_music_list);
+        dialog=new ProgressDialog(this);
+        dialog.setMessage("Loading Music Files");
+        dialog.setCancelable(false);
+        dialog.setInverseBackgroundForced(false);
+        dialog.show();
         audioFiles.clear();
         MyApplication myapp = (MyApplication) getApplication();
         mediaPlayer = myapp.getMediaPlayer();
@@ -320,6 +329,7 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
 
             }
         });
+
     }
 public void getAudioFocus()
 {
@@ -391,6 +401,7 @@ public void getAudioFocus()
             }
         }
     }
+
     public static Intent intent;
     public void NowPlay() {
         if(!hasPlayed)
@@ -557,12 +568,15 @@ public void getAudioFocus()
                 String ModifiedDate= cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED));
                 long Duration=cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
                 String DateAdded=cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED));
-
-                audioFiles.add(new AudioFile(title,artist,filePath,albumId,albumArtUri,album,ModifiedDate,Duration,DateAdded));
-            }while(cursor.moveToNext());
+                boolean a= Files.exists(Paths.get(filePath));
+                if(a && Duration>15000) {
+                    audioFiles.add(new AudioFile(title, artist, filePath, albumId, albumArtUri, album, ModifiedDate, Duration, DateAdded));
+                }
+                }while(cursor.moveToNext());
             cursor.close();
             totalSong.setText(audioFiles.size()-1 +" Songs");
             sortMusic(1);
+            dialog.hide();
 //            audioAdapter.notifyDataSetChanged();
         }
     }
@@ -881,4 +895,5 @@ public void getAudioFocus()
         notificationManager.notify(0,notification);
 
     }
+
 }
