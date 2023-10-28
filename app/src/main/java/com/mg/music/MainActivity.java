@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     public ImageButton  nextButton, prevButton, repeatButton, shuffleButton;
     public static ImageButton pauseButton;
     String path = "";
-    public RelativeLayout relativeLayout;
+    public static RelativeLayout relativeLayout;
 
 
     @Override

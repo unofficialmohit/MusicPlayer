@@ -1,17 +1,17 @@
 package com.mg.music;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
+import static android.graphics.Color.parseColor;
 import static com.mg.music.MusicList.NowPlayingList;
 import static com.mg.music.MusicList.audioFocusListener;
 import static com.mg.music.MusicList.audioManager;
+import static com.mg.music.MusicList.getDominantColor;
 import static com.mg.music.MusicList.pos;
 import static com.mg.music.MyApplication.ACTION_NEXT;
 import static com.mg.music.MyApplication.ACTION_PLAY;
 import static com.mg.music.MyApplication.ACTION_PREV;
 import static com.mg.music.MyApplication.Channel_ID_1;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
@@ -27,30 +28,32 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
-import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
 import java.io.File;
 
-public class NowPlayingPopup extends DialogFragment {
+public class NowPlayingPopup extends BottomSheetDialogFragment {
  public RecyclerView recyclerView;
  public AudioAdapter audioAdapter;
+
  Context context;
     NowPlayingPopup(Context context)
     {
         this.context=context;
     }
-    @NonNull
+
+
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        LayoutInflater inflater = requireActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.now_playing_popup, null);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.now_playing_popup, container, false);
+
         recyclerView=view.findViewById(R.id.nowPlayingRecycler);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(context);
         recyclerView.setLayoutManager(layoutManager);
@@ -83,8 +86,7 @@ public class NowPlayingPopup extends DialogFragment {
             }
         });
 
-        builder.setView(view);
-        return builder.create();
+        return view;
     }
     public String milliSecondsToTimer(long milliseconds){
 
@@ -151,9 +153,15 @@ public class NowPlayingPopup extends DialogFragment {
                 Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
                 MusicList.thumb.setImageBitmap(albumArtBitmap);
                 MainActivity.imgView.setImageBitmap(albumArtBitmap);
+                MainActivity.relativeLayout.setBackgroundColor(getDominantColor(albumArtBitmap));
+                MusicList.miniPlayer.setBackgroundColor(getDominantColor(albumArtBitmap));
+                MusicList.seekList.setBackgroundColor(getDominantColor(albumArtBitmap));
             } else {
                 MusicList.thumb.setImageResource(R.drawable.musicbutton);
                 MusicList.thumb.setImageResource(R.drawable.playing);
+                MainActivity.relativeLayout.setBackgroundColor(Color.BLACK);
+                MusicList.miniPlayer.setBackgroundColor(parseColor("#1E1B1B"));
+                MusicList.seekList.setBackgroundColor(parseColor("#1E1B1B"));
             }
             retriever.release();
 
