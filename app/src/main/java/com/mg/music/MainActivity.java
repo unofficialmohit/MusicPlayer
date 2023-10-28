@@ -1,5 +1,7 @@
 package com.mg.music;
 
+import static android.graphics.Color.parseColor;
+import static com.mg.music.MusicList.getDominantColor;
 import static com.mg.music.MyApplication.ACTION_NEXT;
 import static com.mg.music.MyApplication.ACTION_PLAY;
 import static com.mg.music.MyApplication.ACTION_PREV;
@@ -25,6 +27,7 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
     public ImageButton  nextButton, prevButton, repeatButton, shuffleButton;
     public static ImageButton pauseButton;
     String path = "";
+    public RelativeLayout relativeLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         // Apply slide-up and fade-out animations
 
         setContentView(R.layout.activity_main);
+        relativeLayout=findViewById(R.id.bgColor);
         MusicList.isMediaActive=1;
         AudioFile clickedAudio = MusicList.NowPlayingList.get(MusicList.pos);
         path = clickedAudio.getFilePath();
@@ -452,9 +458,15 @@ public class MainActivity extends AppCompatActivity {
                             byte[] albumArt = retriever.getEmbeddedPicture();
                             if (albumArt != null) {
                                 Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
+                                relativeLayout.setBackgroundColor(getDominantColor(albumArtBitmap));
+                                MusicList.miniPlayer.setBackgroundColor(getDominantColor(albumArtBitmap));
+                                MusicList.seekList.setBackgroundColor(getDominantColor(albumArtBitmap));
                                 MusicList.thumb.setImageBitmap(albumArtBitmap);
                             } else {
+                                relativeLayout.setBackgroundColor(Color.BLACK);
                                 MusicList.thumb.setImageResource(R.drawable.playing);
+                                MusicList.miniPlayer.setBackgroundColor(parseColor("#1E1B1B"));
+                                MusicList.seekList.setBackgroundColor(parseColor("#1E1B1B"));
                             }
                             retriever.release();
                             MusicList.songName.setText(clickedAudio.getTitle());
@@ -497,9 +509,16 @@ public class MainActivity extends AppCompatActivity {
             byte[] albumArt = retriever.getEmbeddedPicture();
             if (albumArt != null) {
                 Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
+                relativeLayout.setBackgroundColor(getDominantColor(albumArtBitmap));
+                MusicList.miniPlayer.setBackgroundColor(getDominantColor(albumArtBitmap));
+                MusicList.seekList.setBackgroundColor(getDominantColor(albumArtBitmap));
                 imgView.setImageBitmap(albumArtBitmap);
             } else {
                 imgView.setImageResource(R.drawable.playing);
+                relativeLayout.setBackgroundColor(Color.BLACK);
+                MusicList.miniPlayer.setBackgroundColor(parseColor("#1E1B1B"));
+                MusicList.seekList.setBackgroundColor(parseColor("#1E1B1B"));
+
             }
             retriever.release();
 
@@ -546,9 +565,16 @@ public class MainActivity extends AppCompatActivity {
                             byte[] albumArt = retriever.getEmbeddedPicture();
                             if (albumArt != null) {
                                 Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
+                                relativeLayout.setBackgroundColor(getDominantColor(albumArtBitmap));
+                                MusicList.miniPlayer.setBackgroundColor(getDominantColor(albumArtBitmap));
+                                MusicList.seekList.setBackgroundColor(getDominantColor(albumArtBitmap));
                                 MusicList.thumb.setImageBitmap(albumArtBitmap);
                             } else {
                                 MusicList.thumb.setImageResource(R.drawable.playing);
+                                relativeLayout.setBackgroundColor(Color.BLACK);
+                                MusicList.miniPlayer.setBackgroundColor(parseColor("#1E1B1B"));
+                                MusicList.seekList.setBackgroundColor(parseColor("#1E1B1B"));
+
                             }
                             retriever.release();
                             MusicList.songName.setText(clickedAudio.getTitle());
@@ -591,9 +617,16 @@ public class MainActivity extends AppCompatActivity {
             byte[] albumArt = retriever.getEmbeddedPicture();
             if (albumArt != null) {
                 Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
+                relativeLayout.setBackgroundColor(getDominantColor(albumArtBitmap));
+                MusicList.miniPlayer.setBackgroundColor(getDominantColor(albumArtBitmap));
+                MusicList.seekList.setBackgroundColor(getDominantColor(albumArtBitmap));
                 imgView.setImageBitmap(albumArtBitmap);
             } else {
                 imgView.setImageResource(R.drawable.playing);
+                relativeLayout.setBackgroundColor(Color.BLACK);
+                MusicList.miniPlayer.setBackgroundColor(parseColor("#1E1B1B"));
+                MusicList.seekList.setBackgroundColor(parseColor("#1E1B1B"));
+
             }
             retriever.release();
 

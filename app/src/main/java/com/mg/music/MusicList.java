@@ -1,5 +1,6 @@
 package com.mg.music;
 
+import static android.graphics.Color.parseColor;
 import static com.mg.music.MyApplication.ACTION_NEXT;
 import static com.mg.music.MyApplication.ACTION_PLAY;
 import static com.mg.music.MyApplication.ACTION_PREV;
@@ -39,6 +40,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -99,6 +101,7 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
     public static MyAudioFocusChangeListener audioFocusListener;
     public static AudioManager audioManager;
     public ProgressDialog dialog;
+    public static LinearLayout miniPlayer,seekList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,6 +119,9 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
         mediaSession=new MediaSessionCompat(this,"PlayerAudio");
         Intent intent =new Intent(MusicList.this,MusicService.class);
         bindService(intent,this,BIND_AUTO_CREATE);
+
+        miniPlayer=findViewById(R.id.miniPlayer);
+        seekList=findViewById(R.id.seekList);
 
         // Check if the permission is granted
         thumb=findViewById(R.id.thumb);
@@ -281,7 +287,7 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
 
         seekBar=findViewById(R.id.seekBar);
         seekBar.getThumb().mutate().setAlpha(0);
-        seekBar.setProgressTintList(ColorStateList.valueOf(Color.parseColor("#FFFFFF")));
+        seekBar.setProgressTintList(ColorStateList.valueOf(parseColor("#FFFFFF")));
 
         seekBar.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -462,9 +468,14 @@ public void getAudioFocus()
             byte[] albumArt = retriever.getEmbeddedPicture();
             if (albumArt != null) {
                 Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
+                miniPlayer.setBackgroundColor(getDominantColor(albumArtBitmap));
+                seekList.setBackgroundColor(getDominantColor(albumArtBitmap));
                 thumb.setImageBitmap(albumArtBitmap);
             } else {
                 thumb.setImageResource(R.drawable.musicbutton);
+                seekList.setBackgroundColor(parseColor("#1E1B1B"));
+                miniPlayer.setBackgroundColor(parseColor("#1E1B1B"));
+
             }
             retriever.release();
 
@@ -475,6 +486,41 @@ public void getAudioFocus()
             Toast.makeText(this, ae.toString(), Toast.LENGTH_SHORT).show();
         }
 
+    }
+    public static int getDominantColor(Bitmap bitmap) {
+        if (bitmap == null) {
+            return Color.TRANSPARENT;
+        }
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int size = width * height;
+        int pixels[] = new int[size];
+        //Bitmap bitmap2 = bitmap.copy(Bitmap.Config.ARGB_4444, false);
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+        int color;
+        int r = 0;
+        int g = 0;
+        int b = 0;
+        int a;
+        int count = 0;
+        for (int i = 0; i < pixels.length; i++) {
+            color = pixels[i];
+            a = Color.alpha(color);
+            if (a > 0) {
+                r += Color.red(color);
+                g += Color.green(color);
+                b += Color.blue(color);
+                count++;
+            }
+        }
+        r /= count;
+        g /= count;
+        b /= count;
+        r = (r << 16) & 0x00FF0000;
+        g = (g << 8) & 0x0000FF00;
+        b = b & 0x000000FF;
+        color = 0xFF000000 | r | g | b;
+        return color;
     }
     public void UpdateSeek()
     {
@@ -781,9 +827,15 @@ public void getAudioFocus()
                 byte[] albumArt = retriever.getEmbeddedPicture();
                 if (albumArt != null) {
                     Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
+                    miniPlayer.setBackgroundColor(getDominantColor(albumArtBitmap));
+                    seekList.setBackgroundColor(getDominantColor(albumArtBitmap));
                     MusicList.thumb.setImageBitmap(albumArtBitmap);
                 } else {
                     MusicList.thumb.setImageResource(R.drawable.musicbutton);
+                    seekList.setBackgroundColor(parseColor("#1E1B1B"));
+
+                    miniPlayer.setBackgroundColor(parseColor("#1E1B1B"));
+
                 }
                 retriever.release();
                 MusicList.songName.setText(clickedAudio.getTitle());

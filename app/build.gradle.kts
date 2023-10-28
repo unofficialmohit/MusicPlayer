@@ -10,7 +10,7 @@ android {
         minSdk = 26
         targetSdk = 34
         versionCode = 1
-        versionName = "1.6.5"
+        versionName = "1.6.6"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -43,5 +43,6 @@ dependencies {
     implementation("androidx.core:core:1.12.0")
     implementation("androidx.media:media:1.6.0")
     runtimeOnly("androidx.media:media:1.6.0")
+    implementation("androidx.palette:palette:1.0.0")
 
 }

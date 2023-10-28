@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-    android:backgroundTint="@color/black"
+    android:id="@+id/bgColor"
     android:background="@color/black"
     >
 
@@ -142,7 +142,7 @@
             android:scrollHorizontally="true"
             android:singleLine="true"
             android:text="Nothing to Play"
-            android:textColor="#F8E2E2"
+            android:textColor="#FFFFFF"
             android:textSize="25dp"></TextView>
 
         <TextView
