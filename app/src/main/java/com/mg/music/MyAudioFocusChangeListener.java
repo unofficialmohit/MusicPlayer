@@ -42,7 +42,7 @@ public class MyAudioFocusChangeListener implements AudioManager.OnAudioFocusChan
                     MusicList.mediaPlayer.start();
                      MusicList.playPauseButton.setBackgroundResource(R.drawable.pausebutton);
                     if(MusicList.isMediaActive==1)
-                     MainActivity.pauseButton.setBackgroundResource(R.drawable.pausebutton);
+                     Player.pauseButton.setBackgroundResource(R.drawable.pausebutton);
                     showNotification(R.drawable.pausebutton);
 
                     // Restore the volume to its original level here
@@ -55,7 +55,7 @@ public class MyAudioFocusChangeListener implements AudioManager.OnAudioFocusChan
                     MusicList.isFocused=0;
                     MusicList.playPauseButton.setBackgroundResource(R.drawable.playbutton);
                     if(MusicList.isMediaActive==1)
-                        MainActivity.pauseButton.setBackgroundResource(R.drawable.playbutton);
+                        Player.pauseButton.setBackgroundResource(R.drawable.playbutton);
                     showNotification(R.drawable.playbutton);
                 }
                 break;
@@ -65,7 +65,7 @@ public class MyAudioFocusChangeListener implements AudioManager.OnAudioFocusChan
                     MusicList.isFocused=0;
                     MusicList.playPauseButton.setBackgroundResource(R.drawable.playbutton);
                     if(MusicList.isMediaActive==1)
-                    MainActivity.pauseButton.setBackgroundResource(R.drawable.playbutton);
+                    Player.pauseButton.setBackgroundResource(R.drawable.playbutton);
                     showNotification(R.drawable.playbutton);
                 }
 

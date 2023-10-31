@@ -40,10 +40,10 @@ public class MusicService extends Service {
                         if (MusicList.isMediaActive == 1) {
                             if (MusicList.mediaPlayer.isPlaying()) {
                                 MusicList.playPauseButton.setBackgroundResource(R.drawable.pausebutton);
-                                MainActivity.pauseButton.setBackgroundResource(R.drawable.pausebutton);
+                                Player.pauseButton.setBackgroundResource(R.drawable.pausebutton);
                             } else {
                                 MusicList.playPauseButton.setBackgroundResource(R.drawable.playbutton);
-                                MainActivity.pauseButton.setBackgroundResource(R.drawable.playbutton);
+                                Player.pauseButton.setBackgroundResource(R.drawable.playbutton);
 
                             }
                         } else {
@@ -81,17 +81,17 @@ public class MusicService extends Service {
         {
             if(MusicList.isMediaActive==1)
             {
-                MainActivity.nowPlayingText.setText(MusicList.NowPlayingList.get(MusicList.pos).getTitle());
-                MainActivity.artistName.setText(MusicList.NowPlayingList.get(MusicList.pos).getArtist());
+                Player.nowPlayingText.setText(MusicList.NowPlayingList.get(MusicList.pos).getTitle());
+                Player.artistName.setText(MusicList.NowPlayingList.get(MusicList.pos).getArtist());
                 try {
                     MediaMetadataRetriever retriever = new MediaMetadataRetriever();
                     retriever.setDataSource(MusicList.NowPlayingList.get(MusicList.pos).getFilePath());
                     byte[] albumArt = retriever.getEmbeddedPicture();
                     if (albumArt != null) {
                         Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
-                        MainActivity.imgView.setImageBitmap(albumArtBitmap);
+                        Player.imgView.setImageBitmap(albumArtBitmap);
                     } else {
-                        MainActivity.imgView.setImageResource(R.drawable.playing);
+                        Player.imgView.setImageResource(R.drawable.playing);
                     }
                     retriever.release();
                 }
@@ -111,7 +111,7 @@ public class MusicService extends Service {
                 {
                     timerString=String.format("%02d:%02d",minutes,seconds);
                 }
-                MainActivity.ftiming.setText(timerString);
+                Player.ftiming.setText(timerString);
 
             }
         }

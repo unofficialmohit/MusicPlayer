@@ -8,4 +8,6 @@
         <item name="android:scrollbarSize">5dp</item> <!-- Adjust the size as needed -->
     </style>
 
+
+
 </resources>

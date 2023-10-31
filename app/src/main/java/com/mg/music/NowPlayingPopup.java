@@ -17,6 +17,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -29,12 +30,15 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import java.io.File;
@@ -42,6 +46,7 @@ import java.io.File;
 public class NowPlayingPopup extends BottomSheetDialogFragment {
  public RecyclerView recyclerView;
  public AudioAdapter audioAdapter;
+    public View view;
 
  Context context;
     NowPlayingPopup(Context context)
@@ -49,10 +54,34 @@ public class NowPlayingPopup extends BottomSheetDialogFragment {
         this.context=context;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        final BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
 
+        if (dialog != null) {
+            WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+            layoutParams.copyFrom(dialog.getWindow().getAttributes());
+
+            int orientation = getResources().getConfiguration().orientation;
+            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            }
+            View bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+
+            if (bottomSheet != null) {
+                final BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(bottomSheet);
+                behavior.setSkipCollapsed(true);
+                behavior.setPeekHeight(400);
+            }
+
+
+            dialog.getWindow().setAttributes(layoutParams);
+        }
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.now_playing_popup, container, false);
+         view = inflater.inflate(R.layout.now_playing_popup, container, false);
 
         recyclerView=view.findViewById(R.id.nowPlayingRecycler);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(context);
@@ -75,11 +104,11 @@ public class NowPlayingPopup extends BottomSheetDialogFragment {
                 }
                 MusicList.songName.setText(clickedAudio.getTitle());
                 MusicList.playPauseButton.setBackgroundResource(R.drawable.pausebutton);
-                MainActivity.pauseButton.setBackgroundResource(R.drawable.pausebutton);
-                MainActivity.nowPlayingText.setText(clickedAudio.getTitle());
-                MainActivity.artistName.setText(clickedAudio.getArtist());
+                Player.pauseButton.setBackgroundResource(R.drawable.pausebutton);
+                Player.nowPlayingText.setText(clickedAudio.getTitle());
+                Player.artistName.setText(clickedAudio.getArtist());
                 String time=milliSecondsToTimer(clickedAudio.getDuration());
-                MainActivity.ftiming.setText(time);
+                Player.ftiming.setText(time);
 
 
                 playAudio(clickedAudio.getFilePath());
@@ -152,14 +181,14 @@ public class NowPlayingPopup extends BottomSheetDialogFragment {
             if (albumArt != null) {
                 Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
                 MusicList.thumb.setImageBitmap(albumArtBitmap);
-                MainActivity.imgView.setImageBitmap(albumArtBitmap);
-                MainActivity.relativeLayout.setBackgroundColor(getDominantColor(albumArtBitmap));
+                Player.imgView.setImageBitmap(albumArtBitmap);
+                Player.relativeLayout.setBackgroundColor(getDominantColor(albumArtBitmap));
                 MusicList.miniPlayer.setBackgroundColor(getDominantColor(albumArtBitmap));
                 MusicList.seekList.setBackgroundColor(getDominantColor(albumArtBitmap));
             } else {
                 MusicList.thumb.setImageResource(R.drawable.musicbutton);
                 MusicList.thumb.setImageResource(R.drawable.playing);
-                MainActivity.relativeLayout.setBackgroundColor(Color.BLACK);
+                Player.relativeLayout.setBackgroundColor(Color.BLACK);
                 MusicList.miniPlayer.setBackgroundColor(parseColor("#1E1B1B"));
                 MusicList.seekList.setBackgroundColor(parseColor("#1E1B1B"));
             }

@@ -1,5 +1,6 @@
 package com.mg.music;
 
+import static android.content.Context.NOTIFICATION_SERVICE;
 import static android.graphics.Color.parseColor;
 import static com.mg.music.MusicList.getDominantColor;
 import static com.mg.music.MyApplication.ACTION_NEXT;
@@ -7,12 +8,16 @@ import static com.mg.music.MyApplication.ACTION_PLAY;
 import static com.mg.music.MyApplication.ACTION_PREV;
 import static com.mg.music.MyApplication.Channel_ID_1;
 
+import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -24,7 +29,10 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -32,10 +40,14 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.shape.CornerFamily;
 import com.google.android.material.shape.ShapeAppearanceModel;
@@ -43,35 +55,38 @@ import com.google.android.material.shape.ShapeAppearanceModel;
 import java.io.File;
 import java.util.Collections;
 
-public class MainActivity extends AppCompatActivity {
+public class Player extends BottomSheetDialogFragment {
+    public Context context;
     public static TextView nowPlayingText,artistName;
     public static ShapeableImageView imgView;
     public SeekBar seekbar;
     public TextView itiming;
     public static TextView ftiming;
     Drawable drawplaybutton, drawpausebutton;
-    public ImageButton  nextButton, prevButton, repeatButton, shuffleButton;
+    public ImageButton nextButton, prevButton, repeatButton, shuffleButton;
     public static ImageButton pauseButton;
     String path = "";
     public static RelativeLayout relativeLayout;
+    public View view;
 
+    Player(Context context)
+    {
+        this.context=context;
+    }
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        overridePendingTransition(R.anim.slide_up, R.anim.slide_down);
-        // Apply slide-up and fade-out animations
-
-        setContentView(R.layout.activity_main);
-        relativeLayout=findViewById(R.id.bgColor);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        view = inflater.inflate(R.layout.activity_main, container, false);
+        relativeLayout=view.findViewById(R.id.bgColor);
         MusicList.isMediaActive=1;
         AudioFile clickedAudio = MusicList.NowPlayingList.get(MusicList.pos);
         path = clickedAudio.getFilePath();
 
-        itiming = findViewById(R.id.itiming);
-        ftiming = findViewById(R.id.ftiming);
+        itiming = view.findViewById(R.id.itiming);
+        ftiming = view.findViewById(R.id.ftiming);
 
-        shuffleButton = findViewById(R.id.shuffleButton);
+        shuffleButton = view.findViewById(R.id.shuffleButton);
         if(MusicList.shuffle==1)
         {
             shuffleButton.setBackgroundResource(R.drawable.shuffleon);
@@ -116,14 +131,14 @@ public class MainActivity extends AppCompatActivity {
                         {
                             break;
                         }
-                            index++;
+                        index++;
                     }
                     MusicList.pos=index;
                 }
             }
         });
 
-        repeatButton = findViewById(R.id.repeatButton);
+        repeatButton = view.findViewById(R.id.repeatButton);
 
         repeatButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -139,21 +154,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        imgView = findViewById(R.id.art);
+        imgView = view.findViewById(R.id.art);
         imgView.setBackgroundResource(R.drawable.playing);
-        imgView.setOnTouchListener(new OnSwipeTouchListener(MainActivity.this)
+        imgView.setOnTouchListener(new OnSwipeTouchListener(context)
         {
             public void onSwipeDown() {
-                onBackPressed();
+                onBackButtonPressed();
             }
 
             public void onSwipeLeft()
             {
-                nextSong();
+//                nextSong();
             }
             public void onSwipeRight()
             {
-                prevSong();
+//                prevSong();
             }
         });
         ShapeAppearanceModel shapeAppearanceModel = new
@@ -166,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        prevButton = findViewById(R.id.prevButton);
+        prevButton = view.findViewById(R.id.prevButton);
         prevButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -174,17 +189,17 @@ public class MainActivity extends AppCompatActivity {
                 prevSong();
             }
         });
-        nextButton = findViewById(R.id.nextButton);
+        nextButton = view.findViewById(R.id.nextButton);
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 nextSong();
             }
         });
-        drawpausebutton = ContextCompat.getDrawable(this, R.drawable.pausebutton);
-        drawplaybutton = ContextCompat.getDrawable(this, R.drawable.playbutton);
+        drawpausebutton = ContextCompat.getDrawable(context, R.drawable.pausebutton);
+        drawplaybutton = ContextCompat.getDrawable(context, R.drawable.playbutton);
 
-        pauseButton = findViewById(R.id.playpauseButton);
+        pauseButton = view.findViewById(R.id.playpauseButton);
         if(MusicList.mediaPlayer.isPlaying())
         {
             pauseButton.setBackgroundResource(R.drawable.pausebutton);
@@ -203,6 +218,7 @@ public class MainActivity extends AppCompatActivity {
                         MusicList.mediaPlayer.pause();
                         showNotification(R.drawable.playbutton);
                         pauseButton.setBackgroundResource(R.drawable.playbutton);
+                        MusicList.playPauseButton.setBackgroundResource(R.drawable.playbutton);
                         MusicList.audioManager.abandonAudioFocus(MusicList.audioFocusListener);
                         MusicList.isFocused=0;
 
@@ -212,19 +228,20 @@ public class MainActivity extends AppCompatActivity {
                         MusicList.mediaPlayer.seekTo(MusicList.mediaPlayer.getCurrentPosition());
                         MusicList.mediaPlayer.start();
                         pauseButton.setBackgroundResource(R.drawable.pausebutton);
+                        MusicList.playPauseButton.setBackgroundResource(R.drawable.pausebutton);
                         showNotification(R.drawable.pausebutton);
 
                     }
                 }
                 else
                 {
-                    Toast.makeText(MainActivity.this, "Nothing to Play", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Nothing to Play", Toast.LENGTH_SHORT).show();
                 }
 
             }
         });
 
-//        stopButton=findViewById(R.id.stopButton);
+//        stopButton=view.findViewById(R.id.stopButton);
 //        stopButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
@@ -238,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
-        seekbar = findViewById(R.id.seek);
+        seekbar = view.findViewById(R.id.seek);
         seekbar.setProgressTintList(ColorStateList.valueOf(Color.parseColor("#FFFFFF")));
         seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -282,32 +299,79 @@ public class MainActivity extends AppCompatActivity {
         }
         catch (Exception ae)
         {
-            Toast.makeText(this, ae.toString(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, ae.toString(), Toast.LENGTH_SHORT).show();
         }
+        return view;
     }
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        MusicList.activeWindow=1;
+
+        final BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
+
+        if (dialog != null) {
+            WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+            layoutParams.copyFrom(dialog.getWindow().getAttributes());
+
+            int orientation = getResources().getConfiguration().orientation;
+            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                int maxWidth = (int) (getResources().getDisplayMetrics().widthPixels * 1); // Set your desired maximum width
+                layoutParams.width = Math.min(maxWidth, getResources().getDisplayMetrics().widthPixels);
+            } else {
+                layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            }
+
+            layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            dialog.getWindow().setAttributes(layoutParams);
+            View bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+
+            if (bottomSheet != null) {
+                final BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(bottomSheet);
+                behavior.setSkipCollapsed(true);
+
+            }
+        }
+
+
+    }
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
+        View view = View.inflate(getContext(), R.layout.activity_main, null);
+        bottomSheetDialog.setContentView(view);
+        BottomSheetBehavior<View> bottomSheetBehavior = BottomSheetBehavior.from((View) view.getParent());
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        bottomSheetBehavior.setMaxWidth(Resources.getSystem().getDisplayMetrics().widthPixels);
+        return bottomSheetDialog;
+    }
+
+
     public void showNotification(int playPauseButton)
     {       Intent intent,prevIntent,playIntent,nextIntent;
         PendingIntent contentIntent,prevPendingIntent,playPendingIntent,nextPendingIntent;
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.S) {
-            intent = new Intent(this, MusicList.class);
-            contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
-            prevIntent = new Intent(this, NotificationReceiver.class).setAction(ACTION_PREV);
-            prevPendingIntent = PendingIntent.getBroadcast(this, 0, prevIntent, PendingIntent.FLAG_IMMUTABLE);
-            playIntent = new Intent(this, NotificationReceiver.class).setAction(ACTION_PLAY);
-            playPendingIntent = PendingIntent.getBroadcast(this, 0, playIntent, PendingIntent.FLAG_IMMUTABLE);
-            nextIntent = new Intent(this, NotificationReceiver.class).setAction(ACTION_NEXT);
-            nextPendingIntent = PendingIntent.getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_IMMUTABLE);
+            intent = new Intent(context, MusicList.class);
+            contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+            prevIntent = new Intent(context, NotificationReceiver.class).setAction(ACTION_PREV);
+            prevPendingIntent = PendingIntent.getBroadcast(context, 0, prevIntent, PendingIntent.FLAG_IMMUTABLE);
+            playIntent = new Intent(context, NotificationReceiver.class).setAction(ACTION_PLAY);
+            playPendingIntent = PendingIntent.getBroadcast(context, 0, playIntent, PendingIntent.FLAG_IMMUTABLE);
+            nextIntent = new Intent(context, NotificationReceiver.class).setAction(ACTION_NEXT);
+            nextPendingIntent = PendingIntent.getBroadcast(context, 0, nextIntent, PendingIntent.FLAG_IMMUTABLE);
         }
         else
         {
-            intent = new Intent(this, MusicList.class);
-            contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_MUTABLE);
-            prevIntent = new Intent(this, NotificationReceiver.class).setAction(ACTION_PREV);
-            prevPendingIntent = PendingIntent.getBroadcast(this, 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            playIntent = new Intent(this, NotificationReceiver.class).setAction(ACTION_PLAY);
-            playPendingIntent = PendingIntent.getBroadcast(this, 0, playIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            nextIntent = new Intent(this, NotificationReceiver.class).setAction(ACTION_NEXT);
-            nextPendingIntent = PendingIntent.getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            intent = new Intent(context, MusicList.class);
+            contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_MUTABLE);
+            prevIntent = new Intent(context, NotificationReceiver.class).setAction(ACTION_PREV);
+            prevPendingIntent = PendingIntent.getBroadcast(context, 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            playIntent = new Intent(context, NotificationReceiver.class).setAction(ACTION_PLAY);
+            playPendingIntent = PendingIntent.getBroadcast(context, 0, playIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            nextIntent = new Intent(context, NotificationReceiver.class).setAction(ACTION_NEXT);
+            nextPendingIntent = PendingIntent.getBroadcast(context, 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         }
         Bitmap picture = null;
         try{
@@ -317,15 +381,15 @@ public class MainActivity extends AppCompatActivity {
             if (albumArt != null) {
                 picture = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
             } else {
-                picture=BitmapFactory.decodeResource(this.getResources(),R.drawable.playing);
+                picture=BitmapFactory.decodeResource(context.getResources(),R.drawable.playing);
             }
             retriever.release();
         }
         catch (Exception ae)
         {
-            Toast.makeText(this, ae.toString(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, ae.toString(), Toast.LENGTH_SHORT).show();
         }
-        Notification notification=new NotificationCompat.Builder(this,Channel_ID_1)
+        Notification notification=new NotificationCompat.Builder(context,Channel_ID_1)
                 .setSmallIcon(R.drawable.musicbutton)
                 .setLargeIcon(picture)
                 .setContentTitle(MusicList.NowPlayingList.get(MusicList.pos).getTitle())
@@ -338,7 +402,7 @@ public class MainActivity extends AppCompatActivity {
                 .setContentIntent(contentIntent)
                 .setSilent(true)
                 .build();
-        NotificationManager notificationManager=(NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        NotificationManager notificationManager=(NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
         notificationManager.notify(0,notification);
     }
 
@@ -353,6 +417,31 @@ public class MainActivity extends AppCompatActivity {
         AudioFile clickedAudio= MusicList.NowPlayingList.get(MusicList.pos);
         pauseButton.setBackgroundResource(R.drawable.pausebutton);
         path = clickedAudio.getFilePath();
+        MusicList.playPauseButton.setBackgroundResource(R.drawable.pausebutton);
+        MusicList.songName.setText(clickedAudio.getTitle());
+        try {
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(MusicList.NowPlayingList.get(MusicList.pos).getFilePath());
+            byte[] albumArt = retriever.getEmbeddedPicture();
+            if (albumArt != null) {
+                Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
+                MusicList.miniPlayer.setBackgroundColor(getDominantColor(albumArtBitmap));
+                MusicList.seekList.setBackgroundColor(getDominantColor(albumArtBitmap));
+                MusicList.thumb.setImageBitmap(albumArtBitmap);
+                imgView.setImageBitmap(albumArtBitmap);
+            } else {
+                MusicList.thumb.setImageResource(R.drawable.musicbutton);
+                imgView.setBackgroundResource(R.drawable.playing);
+                MusicList.seekList.setBackgroundColor(parseColor("#1E1B1B"));
+                MusicList.miniPlayer.setBackgroundColor(parseColor("#1E1B1B"));
+
+            }
+            retriever.release();
+        }
+        catch (Exception ae)
+        {
+            Toast.makeText(context, ae.toString(), Toast.LENGTH_SHORT).show();
+        }
         showNotification(R.drawable.pausebutton);
         playAudio(path);
     }
@@ -360,8 +449,8 @@ public class MainActivity extends AppCompatActivity {
     {
         if (MusicList.isFocused == 0) {
             MusicList.isFocused=1;
-            MusicList.audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            MusicList.audioFocusListener = new MyAudioFocusChangeListener(MainActivity.this);
+            MusicList.audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            MusicList.audioFocusListener = new MyAudioFocusChangeListener(context);
             int result = MusicList.audioManager.requestAudioFocus(
                     MusicList.audioFocusListener,
                     AudioManager.STREAM_MUSIC, // Audio stream type
@@ -369,7 +458,7 @@ public class MainActivity extends AppCompatActivity {
             );
 
             if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                Toast.makeText(MainActivity.this, "Audio Focus Not Available", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Audio Focus Not Available", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -385,10 +474,34 @@ public class MainActivity extends AppCompatActivity {
         AudioFile clickedAudio = MusicList.NowPlayingList.get(MusicList.pos);
         path = clickedAudio.getFilePath();
         pauseButton.setBackgroundResource(R.drawable.pausebutton);
+        MusicList.playPauseButton.setBackgroundResource(R.drawable.pausebutton);
+        MusicList.songName.setText(clickedAudio.getTitle());
+        try {
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(MusicList.NowPlayingList.get(MusicList.pos).getFilePath());
+            byte[] albumArt = retriever.getEmbeddedPicture();
+            if (albumArt != null) {
+                Bitmap albumArtBitmap = BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
+                MusicList.miniPlayer.setBackgroundColor(getDominantColor(albumArtBitmap));
+                MusicList.seekList.setBackgroundColor(getDominantColor(albumArtBitmap));
+                MusicList.thumb.setImageBitmap(albumArtBitmap);
+                imgView.setImageBitmap(albumArtBitmap);
+            } else {
+                MusicList.thumb.setImageResource(R.drawable.musicbutton);
+                imgView.setBackgroundResource(R.drawable.playing);
+                MusicList.seekList.setBackgroundColor(parseColor("#1E1B1B"));
+                MusicList.miniPlayer.setBackgroundColor(parseColor("#1E1B1B"));
+
+            }
+            retriever.release();
+        }
+        catch (Exception ae)
+        {
+            Toast.makeText(context, ae.toString(), Toast.LENGTH_SHORT).show();
+        }
         showNotification(R.drawable.pausebutton);
         playAudio(path);
     }
-
     public void UpdateSeek()
     {
         if(MusicList.mediaPlayer!=null)
@@ -473,7 +586,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         catch (Exception ae)
                         {
-                            Toast.makeText(MainActivity.this, ae.toString(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, ae.toString(), Toast.LENGTH_SHORT).show();
                         }
                         clickedAudio.getFilePath();
                         playAudio(clickedAudio.getFilePath());
@@ -485,19 +598,19 @@ public class MainActivity extends AppCompatActivity {
 
             AudioFile clickedAudio= MusicList.NowPlayingList.get(MusicList.pos);
 
-            nowPlayingText = findViewById(R.id.nowPlayingText);
+            nowPlayingText = view.findViewById(R.id.nowPlayingText);
             nowPlayingText.setSelected(true);
             nowPlayingText.setText(clickedAudio.getTitle());
-            LinearLayout linearLayout=findViewById(R.id.l2);
+            LinearLayout linearLayout=view.findViewById(R.id.l2);
             linearLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    NowPlayingPopup nowPlayingPopup = new NowPlayingPopup(MainActivity.this);
-                    nowPlayingPopup.show(getSupportFragmentManager(), "NowPlayingPopup");
+                    NowPlayingPopup nowPlayingPopup = new NowPlayingPopup(context);
+                    nowPlayingPopup.show(getChildFragmentManager(), "NowPlayingPopup");
                 }
             });
 
-            artistName=findViewById(R.id.artistName);
+            artistName=view.findViewById(R.id.artistName);
             artistName.setText(clickedAudio.getArtist());
 
             ftiming.setText(milliSecondsToTimer(MusicList.mediaPlayer.getDuration()));
@@ -526,14 +639,14 @@ public class MainActivity extends AppCompatActivity {
         catch (Exception ae)
         {
             ae.printStackTrace();
-            Toast.makeText(this, ae.toString(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, ae.toString(), Toast.LENGTH_SHORT).show();
         }
 
     }
     public void playAudio(String filePath) {
-    getAudioFocus();
+        getAudioFocus();
         if (filePath == null || !new File(filePath).exists()) {
-            Toast.makeText(this, "Invalid file path", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Invalid file path", Toast.LENGTH_SHORT).show();
             return;
         }
         if (MusicList.mediaPlayer.isPlaying()) {
@@ -581,7 +694,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         catch (Exception ae)
                         {
-                            Toast.makeText(MainActivity.this, ae.toString(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, ae.toString(), Toast.LENGTH_SHORT).show();
                         }
                         path=clickedAudio.getFilePath();
                         playAudio(path);
@@ -600,11 +713,11 @@ public class MainActivity extends AppCompatActivity {
             MusicList.mediaPlayer.start();
             AudioFile clickedAudio= MusicList.NowPlayingList.get(MusicList.pos);
 
-            nowPlayingText = findViewById(R.id.nowPlayingText);
+            nowPlayingText = view.findViewById(R.id.nowPlayingText);
             nowPlayingText.setSelected(true);
             nowPlayingText.setText(clickedAudio.getTitle());
 
-            artistName=findViewById(R.id.artistName);
+            artistName=view.findViewById(R.id.artistName);
             artistName.setText(clickedAudio.getArtist());
 
 
@@ -626,7 +739,6 @@ public class MainActivity extends AppCompatActivity {
                 relativeLayout.setBackgroundColor(Color.BLACK);
                 MusicList.miniPlayer.setBackgroundColor(parseColor("#1E1B1B"));
                 MusicList.seekList.setBackgroundColor(parseColor("#1E1B1B"));
-
             }
             retriever.release();
 
@@ -641,7 +753,7 @@ public class MainActivity extends AppCompatActivity {
 //                            .placeholder(R.drawable.playing))
 //                    .into(imgView);
 
-//                Toast.makeText(MusicList.this, clickedAudio.getFilePath(), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MusicList.context, clickedAudio.getFilePath(), Toast.LENGTH_SHORT).show();
 
 
         }
@@ -649,17 +761,20 @@ public class MainActivity extends AppCompatActivity {
         {
             ae.printStackTrace();
             String a= String.valueOf(ae);
-            Toast.makeText(this, a, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, a, Toast.LENGTH_SHORT).show();
         }
 
     }
+    private void onBackButtonPressed() {
+        // Handle the back button press as needed
+        // For example, dismiss the dialog or perform some action
+        dismiss();
+    }
 
-//    @Override
-//    protected void onDestroy() {
-//       super.onDestroy();
-//        if(mediaPlayer!=null)
-//        {
-//            mediaPlayer.release();
-//        }
-//    }
+    @Override
+    public void onCancel(@NonNull DialogInterface dialog) {
+        MusicList.activeWindow=0;
+        super.onCancel(dialog);
+    }
 }
+

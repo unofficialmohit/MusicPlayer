@@ -19,6 +19,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -102,6 +103,8 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
     public static AudioManager audioManager;
     public ProgressDialog dialog;
     public static LinearLayout miniPlayer,seekList;
+    public Player p1;
+    public static int activeWindow=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -415,8 +418,11 @@ public void getAudioFocus()
             Toast.makeText(this, "Nothing to Play", Toast.LENGTH_SHORT).show();
             return;
         }
-        intent=new Intent(MusicList.this,MainActivity.class);
-        startActivity(intent);
+//        intent=new Intent(MusicList.this,MainActivity.class);
+//        startActivity(intent);
+        p1=new Player(this);
+        p1.show(getSupportFragmentManager(), "Player");
+
     }
     public void playAudio(String filePath) {
         getAudioFocus();
@@ -807,8 +813,9 @@ public void getAudioFocus()
 
     @Override
     protected void onResume() {
+
         super.onResume();
-        overridePendingTransition(R.anim.slide_up, R.anim.slide_down);
+        activeWindow=0;
         if(hasPlayed) {
             if(mediaPlayer.isPlaying())
             {
@@ -947,5 +954,16 @@ public void getAudioFocus()
         notificationManager.notify(0,notification);
 
     }
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
 
+            // Create and show a new instance of the BottomSheetDialogFragment
+        if(activeWindow==1){
+            p1.dismiss();
+            p1=new Player(this);
+            p1.show(getSupportFragmentManager(), "Player");
+        }
+    }
 }
+
