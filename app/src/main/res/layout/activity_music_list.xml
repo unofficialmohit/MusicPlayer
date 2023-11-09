@@ -46,6 +46,15 @@
           android:id="@+id/orderSort">
 
       ></ImageButton>
+       <ImageButton
+           android:layout_width="25dp"
+           android:layout_height="25dp"
+           android:scaleType="fitXY"
+           android:background="@drawable/refresh"
+           android:id="@+id/reload"
+           android:layout_marginLeft="80dp"
+
+           ></ImageButton>
        <TextView
            android:id="@+id/totalSong"
            android:layout_width="match_parent"

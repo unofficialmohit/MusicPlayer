@@ -80,7 +80,7 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
     public SearchView searchSong;
     public Spinner spinner;
     public TextView totalSong;
-    public ImageButton sortArrow;
+    public ImageButton sortArrow,reload;
     public int orderSort=0;
     public int sortPos=1;
     public static final String[] paths = {"Date Added","Name", "Artist Name","Album Name", "Modified Date","Duration"};
@@ -94,7 +94,7 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
     public static boolean hasPlayed=false;
     boolean isLoaded=false;
     public static ArrayList<AudioFile> cacheAudioFiles =new ArrayList<>();
-    public static SeekBar seekBar;
+    public  SeekBar seekBar;
     public MusicService musicService;
     public static MediaSessionCompat mediaSession;
     public static int isMediaActive=0;
@@ -166,6 +166,19 @@ public class MusicList extends AppCompatActivity implements ActionPlaying, Servi
             }
 
 
+        });
+        reload=findViewById(R.id.reload);
+        reload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(myapp, "Refreshing Music List", Toast.LENGTH_SHORT).show();
+                dialog.show();
+                audioFiles.clear();
+                loadAudioFiles();
+                filterAudioFiles(srch);
+                Toast.makeText(myapp, "Music List Refreshed", Toast.LENGTH_SHORT).show();
+
+            }
         });
 
         playPauseButton=findViewById(R.id.playPauseListPage);
@@ -597,6 +610,8 @@ public void getAudioFocus()
                 }
             }
         }
+
+        totalSong.setText(audioFiles.size() + " Songs");
     }
     public void loadAudioFiles() {
         ContentResolver contentResolver = getContentResolver();
@@ -627,7 +642,7 @@ public void getAudioFocus()
                 }while(cursor.moveToNext());
             cursor.close();
             totalSong.setText(audioFiles.size()-1 +" Songs");
-            sortMusic(1);
+            sortMusic(sortPos);
             dialog.hide();
 //            audioAdapter.notifyDataSetChanged();
         }
